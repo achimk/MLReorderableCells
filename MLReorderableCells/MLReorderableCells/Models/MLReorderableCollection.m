@@ -11,33 +11,8 @@
 typedef NS_ENUM(NSUInteger, MLScrollDirection) {
     MLScrollDirectionNone,
     MLScrollDirectionUp,
-    MLScrollDirectionDown,
-    MLScrollDirectionLeft,
-    MLScrollDirectionRight
+    MLScrollDirectionDown
 };
-
-#pragma mark - UIImageView (MLReorderableCollection)
-
-@interface UIImageView (MLReorderableCollection)
-
-- (void)setImageFromCell:(UICollectionViewCell *)cell;
-
-@end
-
-#pragma mark -
-
-@implementation UIImageView (MLReorderableCollection)
-
-- (void)setImageFromCell:(UICollectionViewCell *)cell {
-    NSParameterAssert(cell);
-    UIGraphicsBeginImageContextWithOptions(cell.bounds.size, NO, 4.0f);
-    [cell.layer renderInContext:UIGraphicsGetCurrentContext()];
-    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    self.image = image;
-}
-
-@end
 
 #pragma mark - MLReorderableCollection
 
@@ -127,9 +102,9 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
             cellFakeImageView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
             highlightedImageView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
             cell.highlighted = YES;
-            [highlightedImageView setImageFromCell:cell];
+            highlightedImageView.image = [self imageFromCollectionViewCell:cell];
             cell.highlighted = NO;
-            [cellFakeImageView setImageFromCell:cell];
+            cellFakeImageView.image = [self imageFromCollectionViewCell:cell];
             
             [self.collectionView addSubview:_cellFakeView];
             [_cellFakeView addSubview:cellFakeImageView];
@@ -396,6 +371,17 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
     } completion:nil];
     
     [self moveItemIfNeeded];
+}
+
+- (UIImage *)imageFromCollectionViewCell:(UICollectionViewCell *)cell {
+    NSParameterAssert(cell);
+    
+    UIGraphicsBeginImageContextWithOptions(cell.bounds.size, NO, 4.0f);
+    [cell.layer renderInContext:UIGraphicsGetCurrentContext()];
+    UIImage * image = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    
+    return image;
 }
 
 @end
