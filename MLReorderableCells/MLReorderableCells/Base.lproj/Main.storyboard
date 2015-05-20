@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="6254" systemVersion="14B25" targetRuntime="iOS.CocoaTouch.iPad" propertyAccessControl="none" useAutolayout="YES" initialViewController="gaY-Md-ckd">
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="6247"/>
+    </dependencies>
+    <scenes>
+        <!--View Controller-->
+        <scene sceneID="keW-u3-70I">
+            <objects>
+                <viewController id="UDB-Kx-xdL" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="MZt-RE-PkX"/>
+                        <viewControllerLayoutGuide type="bottom" id="s9g-8D-qGd"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="mfT-zT-Jwz">
+                        <rect key="frame" x="0.0" y="0.0" width="768" height="1024"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="fER-rZ-3Mx" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1468" y="743"/>
+        </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="csA-3B-LSk">
+            <objects>
+                <navigationController id="Q8o-3k-QqJ" customClass="MLNavigationController" sceneMemberID="viewController">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="bHs-Ou-Bcd">
+                        <rect key="frame" x="0.0" y="0.0" width="768" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <connections>
+                        <segue destination="M9a-d1-bqF" kind="relationship" relationship="rootViewController" id="UYv-yR-TAJ"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="0qg-dV-BWA" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1238" y="-343"/>
+        </scene>
+        <!--Menu-->
+        <scene sceneID="GPu-6I-Bd9">
+            <objects>
+                <viewController id="M9a-d1-bqF" customClass="MLMenuTableViewController" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="D76-wO-YxG"/>
+                        <viewControllerLayoutGuide type="bottom" id="CxC-8a-PYg"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="Zga-hI-7fU">
+                        <rect key="frame" x="0.0" y="0.0" width="308" height="1024"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="22" sectionFooterHeight="22" translatesAutoresizingMaskIntoConstraints="NO" id="Mqi-Kq-iW8">
+                                <rect key="frame" x="0.0" y="0.0" width="308" height="1024"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                            </tableView>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstItem="Mqi-Kq-iW8" firstAttribute="top" secondItem="Zga-hI-7fU" secondAttribute="top" id="ARA-vb-uhP"/>
+                            <constraint firstAttribute="trailing" secondItem="Mqi-Kq-iW8" secondAttribute="trailing" id="Uih-ZS-PE3"/>
+                            <constraint firstItem="Mqi-Kq-iW8" firstAttribute="leading" secondItem="Zga-hI-7fU" secondAttribute="leading" id="kIM-as-qTg"/>
+                            <constraint firstItem="CxC-8a-PYg" firstAttribute="top" secondItem="Mqi-Kq-iW8" secondAttribute="bottom" id="vJB-b8-3MR"/>
+                        </constraints>
+                    </view>
+                    <navigationItem key="navigationItem" title="Menu" id="H6l-O2-CVR"/>
+                    <connections>
+                        <outlet property="tableView" destination="Mqi-Kq-iW8" id="PQo-K1-ayp"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="fEu-2Z-iIf" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1791" y="-343"/>
+        </scene>
+        <!--Split View Controller-->
+        <scene sceneID="Ows-Yh-WsI">
+            <objects>
+                <splitViewController id="gaY-Md-ckd" customClass="MLSplitViewController" sceneMemberID="viewController">
+                    <connections>
+                        <segue destination="Q8o-3k-QqJ" kind="relationship" relationship="masterViewController" id="kSp-bR-8yE"/>
+                        <segue destination="UDB-Kx-xdL" kind="relationship" relationship="detailViewController" id="oNQ-Nb-S2q"/>
+                    </connections>
+                </splitViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="pcO-Oa-7U8" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="480" y="200"/>
+        </scene>
+    </scenes>
+    <simulatedMetricsContainer key="defaultSimulatedMetrics">
+        <simulatedStatusBarMetrics key="statusBar"/>
+        <simulatedOrientationMetrics key="orientation"/>
+        <simulatedScreenMetrics key="destination"/>
+    </simulatedMetricsContainer>
+</document>
