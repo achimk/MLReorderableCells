@@ -8,12 +8,17 @@
 
 #import "AppDelegate.h"
 
+#pragma mark - AppDelegate
+
 @interface AppDelegate ()
 
 @end
 
+#pragma mark -
+
 @implementation AppDelegate
 
+#pragma mark UIApplicationDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.

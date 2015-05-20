@@ -8,6 +8,7 @@
 
 #import "MLMenuTableViewController.h"
 #import "MLTableViewCell.h"
+#import "MLDataCollectionViewController.h"
 
 typedef NS_ENUM(NSUInteger, MLMenuItem) {
     MLMenuItemReorderableCollection,
@@ -38,10 +39,17 @@ typedef NS_ENUM(NSUInteger, MLMenuItem) {
 #pragma mark UITableViewDelegate
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    UIViewController * viewController = nil;
+    
     switch (indexPath.row) {
         case MLMenuItemReorderableCollection: {
-            NSLog(@"-> %@: %@", NSStringFromClass([self class]), NSStringFromSelector(_cmd));
+            viewController = [[MLDataCollectionViewController alloc] init];
         } break;
+    }
+    
+    if (viewController) {
+        UINavigationController * navigationController = self.splitViewController.viewControllers[1];
+        [navigationController setViewControllers:@[viewController] animated:YES];
     }
 }
 
