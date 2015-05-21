@@ -14,7 +14,7 @@
 #import <RZCollectionList/RZCollectionList.h>
 #import "MLSettingsTableViewController.h"
 
-#define NUMBER_OF_INITIAL_ITEMS     9
+#define NUMBER_OF_INITIAL_ITEMS     27
 
 #pragma mark - MLDataCollectionViewController
 

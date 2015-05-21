@@ -71,26 +71,31 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
 - (void)handleLongPressGesture:(UILongPressGestureRecognizer *)gestureRecognizer {
     switch (gestureRecognizer.state) {
         case UIGestureRecognizerStateBegan: {
-            //indexPath
-            NSIndexPath *indexPath = [self.collectionView indexPathForItemAtPoint:[gestureRecognizer locationInView:self.collectionView]];
+            // indexPath
+            NSIndexPath * indexPath = [self.collectionView indexPathForItemAtPoint:[gestureRecognizer locationInView:self.collectionView]];
+            if (!indexPath) {
+                return;
+            }
             
-            //can move
+            // can move
             if ([self.dataSource respondsToSelector:@selector(collectionView:canReorderItemAtIndexPath:)]) {
                 if (![self.dataSource collectionView:self.collectionView canReorderItemAtIndexPath:indexPath]) {
                     return;
                 }
             }
             
-            //will begin dragging
+            // will begin dragging
             if ([self.delegate respondsToSelector:@selector(collectionView:willBeginDraggingItemAtIndexPath:)]) {
                 [self.delegate collectionView:self.collectionView willBeginDraggingItemAtIndexPath:indexPath];
             }
             
-            //indexPath
+            // indexPath
             _reorderingCellIndexPath = indexPath;
-            //scrolls top off
+
+            // scrolls top off
             self.collectionView.scrollsToTop = NO;
-            //cell fake view
+            
+            // cell fake view
             UICollectionViewCell * cell = [self.collectionView cellForItemAtIndexPath:indexPath];
             _cellFakeView = [[UIView alloc] initWithFrame:cell.frame];
             _cellFakeView.layer.shadowColor = [UIColor blackColor].CGColor;
@@ -117,23 +122,20 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
             [_cellFakeView addSubview:cellFakeImageView];
             [_cellFakeView addSubview:highlightedImageView];
             
-            //set center
+            // set center
             _reorderingCellCenter = cell.center;
             _cellFakeViewCenter = _cellFakeView.center;
             [self.collectionView.collectionViewLayout invalidateLayout];
 
-            //animation
-#warning Is fake cell center needed?
-            CGPoint fakeCellCenter = [cell convertPoint:CGPointMake(floorf(cell.frame.size.width * 0.5f), floorf(cell.frame.size.height * 0.5f)) toView:reorderableCollectionContainer];
+            // animation
             [UIView animateWithDuration:.3f delay:0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut animations:^{
-                _cellFakeView.center = fakeCellCenter;
                 _cellFakeView.transform = CGAffineTransformMakeScale(1.1f, 1.1f);
                 highlightedImageView.alpha = 0;
             } completion:^(BOOL finished) {
                 [highlightedImageView removeFromSuperview];
             }];
             
-            //did begin dragging
+            // did begin dragging
             if ([self.delegate respondsToSelector:@selector(collectionView:didBeginDraggingItemAtIndexPath:)]) {
                 [self.delegate collectionView:self.collectionView didBeginDraggingItemAtIndexPath:indexPath];
             }
@@ -142,18 +144,18 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
         case UIGestureRecognizerStateEnded:
         case UIGestureRecognizerStateCancelled: {
             NSIndexPath * currentCellIndexPath = _reorderingCellIndexPath;
-            //will end dragging
+            // will end dragging
             if ([self.delegate respondsToSelector:@selector(collectionView:willEndDraggingItemAtIndexPath:)]) {
                 [self.delegate collectionView:self.collectionView willEndDraggingItemAtIndexPath:currentCellIndexPath];
             }
             
-            //scrolls top on
+            // scrolls top on
             self.collectionView.scrollsToTop = YES;
             
-            //disable auto scroll
+            // disable auto scroll
             [self invalidateDisplayLink];
             
-            //remove fake view
+            // remove fake view
             UICollectionViewLayoutAttributes * attributes = [self.collectionView.collectionViewLayout layoutAttributesForItemAtIndexPath:currentCellIndexPath];
             UIView * reorderableCollectionContainer = [self reorderableCollectionContainer];
             CGRect frame = [self.collectionView convertRect:attributes.frame toView:reorderableCollectionContainer];
@@ -410,9 +412,21 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
     _displayLink = nil;
 }
 
+
 - (void)autoScroll {
-#warning Fix bugs for autoscroll when reorderable content view is not a collection view
-    
+    if (self.collectionView == self.reorderableCollectionContainer) {
+        [self collectionViewAutoScroll];
+    }
+    else {
+        [self reorderableCollectionContainerAutoScroll];
+    }
+}
+
+- (void)reorderableCollectionContainerAutoScroll {
+#warning Implement auto scroll when reorderable collection container view is not a collection view
+}
+
+- (void)collectionViewAutoScroll {
     CGPoint contentOffset = self.collectionView.contentOffset;
     UIEdgeInsets contentInset = self.collectionView.contentInset;
     CGSize contentSize = self.collectionView.contentSize;
