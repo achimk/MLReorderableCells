@@ -189,23 +189,27 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
 - (void)handlePanGesture:(UIPanGestureRecognizer *)gestureRecognizer {
     switch (gestureRecognizer.state) {
         case UIGestureRecognizerStateChanged: {
-            //translation
+            // translation
             _panTranslation = [gestureRecognizer translationInView:self.collectionView];
             _cellFakeView.center = CGPointMake(_cellFakeViewCenter.x + _panTranslation.x, _cellFakeViewCenter.y + _panTranslation.y);
             
-            //move layout
+            // move layout
             if (![self moveItemIfNeeded]) {
                 [self replaceItemIfNeeded];
             }
             
-            //scroll
-            if (CGRectGetMaxY(_cellFakeView.frame) >= self.collectionView.contentOffset.y + (self.collectionView.bounds.size.height - _scrollTrigerEdgeInsets.bottom -_scrollTrigerPadding.bottom)) {
+            UIView * reorderableCollectionContainer = [self reorderableCollectionContainer];
+            CGRect fakeCellRect = [reorderableCollectionContainer convertRect:_cellFakeView.frame toView:self.collectionView];
+            
+#warning Add ignore for auto scroll when dragged cell is outside of collection view
+            // scroll
+            if (CGRectGetMaxY(fakeCellRect) >= self.collectionView.contentOffset.y + (self.collectionView.bounds.size.height - _scrollTrigerEdgeInsets.bottom -_scrollTrigerPadding.bottom)) {
                 if (ceilf(self.collectionView.contentOffset.y) < self.collectionView.contentSize.height - self.collectionView.bounds.size.height) {
                     _scrollDirection = MLScrollDirectionDown;
                     [self setupDisplayLink];
                 }
             }
-            else if (CGRectGetMinY(_cellFakeView.frame) <= self.collectionView.contentOffset.y + _scrollTrigerEdgeInsets.top + _scrollTrigerPadding.top) {
+            else if (CGRectGetMinY(fakeCellRect) <= self.collectionView.contentOffset.y + _scrollTrigerEdgeInsets.top + _scrollTrigerPadding.top) {
                 if (self.collectionView.contentOffset.y > -self.collectionView.contentInset.top) {
                     _scrollDirection = MLScrollDirectionUp;
                     [self setupDisplayLink];
@@ -423,7 +427,57 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
 }
 
 - (void)reorderableCollectionContainerAutoScroll {
-#warning Implement auto scroll when reorderable collection container view is not a collection view
+    CGPoint contentOffset = self.collectionView.contentOffset;
+    UIEdgeInsets contentInset = self.collectionView.contentInset;
+    CGSize contentSize = self.collectionView.contentSize;
+    CGSize boundsSize = self.collectionView.bounds.size;
+    CGFloat increment = 0;
+    
+    UIView * reorderableCollectionContainer = [self reorderableCollectionContainer];
+    CGRect fakeCellRect = [reorderableCollectionContainer convertRect:_cellFakeView.frame toView:self.collectionView];
+    
+    if (MLScrollDirectionDown == _scrollDirection) {
+        CGFloat percentage = (((CGRectGetMaxY(fakeCellRect) - contentOffset.y) - (boundsSize.height - _scrollTrigerEdgeInsets.bottom - _scrollTrigerPadding.bottom)) / _scrollTrigerEdgeInsets.bottom);
+        increment = 10 * percentage;
+        
+        if (increment >= 10.f) {
+            increment = 10.f;
+        }
+    }
+    else if (MLScrollDirectionUp == _scrollDirection) {
+        CGFloat percentage = (1.f - ((CGRectGetMinY(fakeCellRect) - contentOffset.y - _scrollTrigerPadding.top) / _scrollTrigerEdgeInsets.top));
+        increment = -10.f * percentage;
+        
+        if (increment <= -10.f) {
+            increment = -10.f;
+        }
+    }
+    
+    if (contentOffset.y + increment <= -contentInset.top) {
+        [UIView animateWithDuration:.07f delay:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
+            self.collectionView.contentOffset = CGPointMake(contentOffset.x, -contentInset.top);
+        } completion:nil];
+        
+        [self invalidateDisplayLink];
+        return;
+    }
+    else if (contentOffset.y + increment >= contentSize.height - boundsSize.height - contentInset.bottom) {
+        [UIView animateWithDuration:.07f delay:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
+            self.collectionView.contentOffset = CGPointMake(contentOffset.x, contentSize.height - boundsSize.height - contentInset.bottom);
+        } completion:nil];
+        
+        [self invalidateDisplayLink];
+        return;
+    }
+    
+    [self.collectionView performBatchUpdates:^{
+        self.collectionView.contentOffset = CGPointMake(contentOffset.x, contentOffset.y + increment);
+    } completion:nil];
+    
+    if (![self moveItemIfNeeded]) {
+        [self replaceItemIfNeeded];
+    }
+
 }
 
 - (void)collectionViewAutoScroll {
