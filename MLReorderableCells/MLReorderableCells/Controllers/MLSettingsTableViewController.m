@@ -11,6 +11,7 @@
 #import "MLTableViewCell.h"
 
 typedef NS_ENUM(NSUInteger, MLOptions) {
+    MLOptionUseMainContainer,
     MLOptionReorderItems,
     MLOptionMoveItems,
     MLOptionReplaceItems,
@@ -55,6 +56,9 @@ typedef NS_ENUM(NSUInteger, MLOptions) {
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     switch (indexPath.row) {
+        case MLOptionUseMainContainer: {
+            self.collectionViewController.useMainContainer = !self.collectionViewController.useMainContainer;
+        } break;
         case MLOptionReorderItems: {
             self.collectionViewController.canReorderItems = !self.collectionViewController.canReorderItems;
         } break;
@@ -75,6 +79,10 @@ typedef NS_ENUM(NSUInteger, MLOptions) {
     MLTableViewCell * cell = [MLTableViewCell cellForTableView:tableView indexPath:indexPath];
     
     switch (indexPath.row) {
+        case MLOptionUseMainContainer: {
+            cell.textLabel.text = @"Use main container";
+            cell.accessoryType = (self.collectionViewController.useMainContainer) ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;
+        } break;
         case MLOptionReorderItems: {
             cell.textLabel.text = @"Allow reorder";
             cell.accessoryType = (self.collectionViewController.canReorderItems) ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;

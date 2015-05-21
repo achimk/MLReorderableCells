@@ -10,6 +10,7 @@
 
 @interface MLDataCollectionViewController : MLCollectionViewController
 
+@property (nonatomic, readwrite, assign) BOOL useMainContainer;
 @property (nonatomic, readwrite, assign) BOOL canReorderItems;
 @property (nonatomic, readwrite, assign) BOOL canMoveItems;
 @property (nonatomic, readwrite, assign) BOOL canReplaceItems;

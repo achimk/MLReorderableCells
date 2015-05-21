@@ -38,8 +38,10 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
+    self.useMainContainer = YES;
     self.canReorderItems = YES;
-    self.canMoveItems = YES;
+    self.canMoveItems = NO;
+    self.canReplaceItems = YES;
 
     self.resultsController = [[RZArrayCollectionList alloc] initWithArray:@[] sectionNameKeyPath:nil];
     self.reorderableCollection = [[MLReorderableCollection alloc] initWithCollectionView:self.collectionView];
@@ -88,7 +90,7 @@
 - (IBAction)settingsAction:(id)sender {
     MLSettingsTableViewController * settingsViewController = [[MLSettingsTableViewController alloc] initWithCollectionViewController:self];
     UIPopoverController * popover = [[UIPopoverController alloc] initWithContentViewController:settingsViewController];
-    popover.popoverContentSize = CGSizeMake(320.0f, 140.0f);
+    popover.popoverContentSize = CGSizeMake(320.0f, 200.0f);
     [popover presentPopoverFromBarButtonItem:sender permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
 }
 
@@ -106,11 +108,19 @@
 - (void)collectionView:(UICollectionView *)collectionView didEndDraggingItemAtIndexPath:(NSIndexPath *)indexPath {
 }
 
-#pragma mark MLReorderableCollectionDataSource
+#pragma mark - MLReorderableCollectionDataSource
 
-- (BOOL)collectionView:(UICollectionView *)collectionView canMoveItemAtIndexPath:(NSIndexPath *)indexPath {
+#pragma mark Reorder
+
+- (BOOL)collectionView:(UICollectionView *)collectionView canReorderItemAtIndexPath:(NSIndexPath *)indexPath {
     return self.canReorderItems;
 }
+
+- (UIView *)reorderableCollectionContainerForCollectionView:(UICollectionView *)collectionView {
+    return (self.useMainContainer) ? self.splitViewController.view : collectionView;
+}
+
+#pragma mark Move
 
 - (BOOL)collectionView:(UICollectionView *)collectionView itemAtIndexPath:(NSIndexPath *)fromIndexPath canMoveToIndexPath:(NSIndexPath *)toIndexPath {
     return self.canMoveItems;
@@ -122,6 +132,8 @@
 - (void)collectionView:(UICollectionView *)collectionView itemAtIndexPath:(NSIndexPath *)fromIndexPath didMoveToIndexPath:(NSIndexPath *)toIndexPath {
     [self.resultsController moveObjectAtIndexPath:fromIndexPath toIndexPath:toIndexPath];
 }
+
+#pragma mark Replace
 
 - (BOOL)collectionView:(UICollectionView *)collectionView itemAtIndexPath:(NSIndexPath *)fromIndexPath canReplaceWithIndexPath:(NSIndexPath *)toIndexPath {
     return self.canReplaceItems;

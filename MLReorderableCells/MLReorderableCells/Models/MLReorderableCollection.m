@@ -12,6 +12,7 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
     MLScrollDirectionNone,
     MLScrollDirectionUp,
     MLScrollDirectionDown
+#warning Add support for horizontal direction scrolling
 };
 
 #pragma mark - MLReorderableCollection
@@ -27,6 +28,8 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
 @property (nonatomic, readonly, assign) UIEdgeInsets scrollTrigerEdgeInsets;
 @property (nonatomic, readonly, assign) UIEdgeInsets scrollTrigerPadding;
 @property (nonatomic, readonly, assign) MLScrollDirection scrollDirection;
+
+@property (nonatomic, readwrite, strong) UIView * reorderableCollectionContainer;
 
 @end
 
@@ -72,8 +75,8 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
             NSIndexPath *indexPath = [self.collectionView indexPathForItemAtPoint:[gestureRecognizer locationInView:self.collectionView]];
             
             //can move
-            if ([self.dataSource respondsToSelector:@selector(collectionView:canMoveItemAtIndexPath:)]) {
-                if (![self.dataSource collectionView:self.collectionView canMoveItemAtIndexPath:indexPath]) {
+            if ([self.dataSource respondsToSelector:@selector(collectionView:canReorderItemAtIndexPath:)]) {
+                if (![self.dataSource collectionView:self.collectionView canReorderItemAtIndexPath:indexPath]) {
                     return;
                 }
             }
@@ -105,8 +108,12 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
             highlightedImageView.image = [self imageFromCollectionViewCell:cell];
             cell.highlighted = NO;
             cellFakeImageView.image = [self imageFromCollectionViewCell:cell];
+
+            UIView * reorderableCollectionContainer = [self reorderableCollectionContainer];
+            CGRect fakeViewRect = [cell convertRect:cell.bounds toView:reorderableCollectionContainer];
+            _cellFakeView.frame = fakeViewRect;
             
-            [self.collectionView addSubview:_cellFakeView];
+            [reorderableCollectionContainer addSubview:_cellFakeView];
             [_cellFakeView addSubview:cellFakeImageView];
             [_cellFakeView addSubview:highlightedImageView];
             
@@ -116,8 +123,10 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
             [self.collectionView.collectionViewLayout invalidateLayout];
 
             //animation
+#warning Is fake cell center needed?
+            CGPoint fakeCellCenter = [cell convertPoint:CGPointMake(floorf(cell.frame.size.width * 0.5f), floorf(cell.frame.size.height * 0.5f)) toView:reorderableCollectionContainer];
             [UIView animateWithDuration:.3f delay:0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut animations:^{
-                _cellFakeView.center = cell.center;
+                _cellFakeView.center = fakeCellCenter;
                 _cellFakeView.transform = CGAffineTransformMakeScale(1.1f, 1.1f);
                 highlightedImageView.alpha = 0;
             } completion:^(BOOL finished) {
@@ -146,16 +155,20 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
             
             //remove fake view
             UICollectionViewLayoutAttributes * attributes = [self.collectionView.collectionViewLayout layoutAttributesForItemAtIndexPath:currentCellIndexPath];
+            UIView * reorderableCollectionContainer = [self reorderableCollectionContainer];
+            CGRect frame = [self.collectionView convertRect:attributes.frame toView:reorderableCollectionContainer];
+            
             [UIView animateWithDuration:.3f delay:0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut animations:^{
                 _cellFakeView.transform = CGAffineTransformIdentity;
-                _cellFakeView.frame = attributes.frame;
+                _cellFakeView.frame = frame;
             } completion:^(BOOL finished) {
                 [_cellFakeView removeFromSuperview];
                 _cellFakeView = nil;
                 _reorderingCellIndexPath = nil;
                 _reorderingCellCenter = CGPointZero;
                 _cellFakeViewCenter = CGPointZero;
-                
+
+                self.reorderableCollectionContainer = nil;
                 [self.collectionView.collectionViewLayout invalidateLayout];
                 
                 if (finished) {
@@ -212,8 +225,10 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
 }
 
 - (BOOL)moveItemIfNeeded {
+    UIView * reorderableCollectionContainer = [self reorderableCollectionContainer];
+    CGPoint point = [reorderableCollectionContainer convertPoint:_cellFakeView.center toView:self.collectionView];
     NSIndexPath * atIndexPath = _reorderingCellIndexPath;
-    NSIndexPath * toIndexPath = [self.collectionView indexPathForItemAtPoint:_cellFakeView.center];
+    NSIndexPath * toIndexPath = [self.collectionView indexPathForItemAtPoint:point];
     
     if (nil == toIndexPath || [atIndexPath isEqual:toIndexPath]) {
         return NO;
@@ -247,8 +262,10 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
 }
 
 - (BOOL)replaceItemIfNeeded {
+    UIView * reorderableCollectionContainer = [self reorderableCollectionContainer];
+    CGPoint point = [reorderableCollectionContainer convertPoint:_cellFakeView.center toView:self.collectionView];
     NSIndexPath * atIndexPath = _reorderingCellIndexPath;
-    NSIndexPath * toIndexPath = [self.collectionView indexPathForItemAtPoint:_cellFakeView.center];
+    NSIndexPath * toIndexPath = [self.collectionView indexPathForItemAtPoint:point];
     
     if (nil == toIndexPath || [atIndexPath isEqual:toIndexPath]) {
         return NO;
@@ -329,6 +346,40 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
 
 #pragma mark Private Methods
 
+- (UIView *)reorderableCollectionContainer {
+    if (_reorderableCollectionContainer) {
+        return _reorderableCollectionContainer;
+    }
+    
+    UIView * collectionContainer = nil;
+    if ([self.dataSource respondsToSelector:@selector(reorderableCollectionContainerForCollectionView:)]) {
+        collectionContainer = [self.dataSource reorderableCollectionContainerForCollectionView:self.collectionView];
+        
+#if DEBUG
+        if (collectionContainer) {
+            UIView * superview = self.collectionView;
+            while (nil != superview) {
+                if (collectionContainer == superview) {
+                    break;
+                }
+                
+                superview = superview.superview;
+            }
+            
+            NSAssert(superview, @"Reorderable collection container doesn't contains collection view as a child view.");
+        }
+#endif
+    }
+    
+    if (!collectionContainer) {
+        collectionContainer = self.collectionView;
+    }
+    
+    _reorderableCollectionContainer = collectionContainer;
+    
+    return collectionContainer;
+}
+
 - (void)setupCollectionViewGestures {
     _longPressGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPressGesture:)];
     _panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePanGesture:)];
@@ -360,6 +411,8 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
 }
 
 - (void)autoScroll {
+#warning Fix bugs for autoscroll when reorderable content view is not a collection view
+    
     CGPoint contentOffset = self.collectionView.contentOffset;
     UIEdgeInsets contentInset = self.collectionView.contentInset;
     CGSize contentSize = self.collectionView.contentSize;

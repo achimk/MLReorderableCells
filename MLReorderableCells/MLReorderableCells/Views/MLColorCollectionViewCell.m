@@ -16,6 +16,7 @@
 - (void)finishInitialize {
     self.backgroundView = [[UIView alloc] init];
     self.backgroundView.backgroundColor = [UIColor blackColor];
+    self.backgroundView.layer.cornerRadius = 5.0f;
 }
 
 #pragma mark Reuse
