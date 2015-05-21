@@ -12,6 +12,7 @@
 		273295261B0D1808000FC492 /* MLDataCollectionViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 273295251B0D1808000FC492 /* MLDataCollectionViewController.m */; };
 		273295291B0D18AB000FC492 /* MLColorModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 273295281B0D18AB000FC492 /* MLColorModel.m */; };
 		2732952C1B0D1A38000FC492 /* MLColorCollectionViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2732952B1B0D1A38000FC492 /* MLColorCollectionViewCell.m */; };
+		27694F771B0E4DC60034551B /* MLSettingsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 27694F761B0E4DC60034551B /* MLSettingsTableViewController.m */; };
 		2771B05B1B0CF25A00F69DFA /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 2771B05A1B0CF25A00F69DFA /* main.m */; };
 		2771B05E1B0CF25A00F69DFA /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 2771B05D1B0CF25A00F69DFA /* AppDelegate.m */; };
 		2771B0641B0CF25A00F69DFA /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2771B0621B0CF25A00F69DFA /* Main.storyboard */; };
@@ -48,6 +49,8 @@
 		273295281B0D18AB000FC492 /* MLColorModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MLColorModel.m; sourceTree = "<group>"; };
 		2732952A1B0D1A38000FC492 /* MLColorCollectionViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MLColorCollectionViewCell.h; sourceTree = "<group>"; };
 		2732952B1B0D1A38000FC492 /* MLColorCollectionViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MLColorCollectionViewCell.m; sourceTree = "<group>"; };
+		27694F751B0E4DC60034551B /* MLSettingsTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MLSettingsTableViewController.h; sourceTree = "<group>"; };
+		27694F761B0E4DC60034551B /* MLSettingsTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MLSettingsTableViewController.m; sourceTree = "<group>"; };
 		2771B0551B0CF25A00F69DFA /* MLReorderableCells.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MLReorderableCells.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2771B0591B0CF25A00F69DFA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2771B05A1B0CF25A00F69DFA /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -175,6 +178,8 @@
 				2771B09C1B0CF75C00F69DFA /* MLMenuTableViewController.m */,
 				273295241B0D1808000FC492 /* MLDataCollectionViewController.h */,
 				273295251B0D1808000FC492 /* MLDataCollectionViewController.m */,
+				27694F751B0E4DC60034551B /* MLSettingsTableViewController.h */,
+				27694F761B0E4DC60034551B /* MLSettingsTableViewController.m */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -401,6 +406,7 @@
 				2771B05B1B0CF25A00F69DFA /* main.m in Sources */,
 				2771B08B1B0CF40000F69DFA /* MLSplitViewController.m in Sources */,
 				27267F761B0D206B008B9870 /* MLFlowLayout.m in Sources */,
+				27694F771B0E4DC60034551B /* MLSettingsTableViewController.m in Sources */,
 				273295231B0D1702000FC492 /* MLReorderableCollection.m in Sources */,
 				2771B0961B0CF52A00F69DFA /* MLCollectionViewCell.m in Sources */,
 				2771B0991B0CF53600F69DFA /* MLTableViewCell.m in Sources */,

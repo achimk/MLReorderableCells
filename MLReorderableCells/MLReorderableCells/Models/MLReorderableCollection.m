@@ -177,8 +177,11 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
             //translation
             _panTranslation = [gestureRecognizer translationInView:self.collectionView];
             _cellFakeView.center = CGPointMake(_cellFakeViewCenter.x + _panTranslation.x, _cellFakeViewCenter.y + _panTranslation.y);
+            
             //move layout
-            [self moveItemIfNeeded];
+            if (![self moveItemIfNeeded]) {
+                [self replaceItemIfNeeded];
+            }
             
             //scroll
             if (CGRectGetMaxY(_cellFakeView.frame) >= self.collectionView.contentOffset.y + (self.collectionView.bounds.size.height - _scrollTrigerEdgeInsets.bottom -_scrollTrigerPadding.bottom)) {
@@ -208,36 +211,75 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
     }
 }
 
-- (void)moveItemIfNeeded {
+- (BOOL)moveItemIfNeeded {
     NSIndexPath * atIndexPath = _reorderingCellIndexPath;
     NSIndexPath * toIndexPath = [self.collectionView indexPathForItemAtPoint:_cellFakeView.center];
     
-    if (toIndexPath == nil || [atIndexPath isEqual:toIndexPath]) {
-        return;
+    if (nil == toIndexPath || [atIndexPath isEqual:toIndexPath]) {
+        return NO;
     }
     
-    //can move
+    // can move
     if ([self.dataSource respondsToSelector:@selector(collectionView:itemAtIndexPath:canMoveToIndexPath:)]) {
         if (![self.dataSource collectionView:self.collectionView itemAtIndexPath:atIndexPath canMoveToIndexPath:toIndexPath]) {
-            return;
+            return NO;
         }
     }
     
-    //will move
+    // will move
     if ([self.dataSource respondsToSelector:@selector(collectionView:itemAtIndexPath:willMoveToIndexPath:)]) {
         [self.dataSource collectionView:self.collectionView itemAtIndexPath:atIndexPath willMoveToIndexPath:toIndexPath];
     }
     
-    //move
+    // move
     [self.collectionView performBatchUpdates:^{
-        //update cell indexPath
+        // update cell indexPath
         _reorderingCellIndexPath = toIndexPath;
         [self.collectionView moveItemAtIndexPath:atIndexPath toIndexPath:toIndexPath];
-        //did move
+        
+        // did move
         if ([self.dataSource respondsToSelector:@selector(collectionView:itemAtIndexPath:didMoveToIndexPath:)]) {
             [self.dataSource collectionView:self.collectionView itemAtIndexPath:atIndexPath didMoveToIndexPath:toIndexPath];
         }
     } completion:nil];
+    
+    return YES;
+}
+
+- (BOOL)replaceItemIfNeeded {
+    NSIndexPath * atIndexPath = _reorderingCellIndexPath;
+    NSIndexPath * toIndexPath = [self.collectionView indexPathForItemAtPoint:_cellFakeView.center];
+    
+    if (nil == toIndexPath || [atIndexPath isEqual:toIndexPath]) {
+        return NO;
+    }
+    
+    // can replace
+    if ([self.dataSource respondsToSelector:@selector(collectionView:itemAtIndexPath:canReplaceWithIndexPath:)]) {
+        if (![self.dataSource collectionView:self.collectionView itemAtIndexPath:atIndexPath canReplaceWithIndexPath:toIndexPath]) {
+            return NO;
+        }
+    }
+    
+    // will replace
+    if ([self.dataSource respondsToSelector:@selector(collectionView:itemAtIndexPath:willReplaceWithIndexPath:)]) {
+        [self.dataSource collectionView:self.collectionView itemAtIndexPath:atIndexPath willReplaceWithIndexPath:toIndexPath];
+    }
+    
+    // replace
+    [self.collectionView performBatchUpdates:^{
+        // update cell indexPath
+        _reorderingCellIndexPath = toIndexPath;
+        [self.collectionView moveItemAtIndexPath:atIndexPath toIndexPath:toIndexPath];
+        [self.collectionView moveItemAtIndexPath:toIndexPath toIndexPath:atIndexPath];
+        
+        // did replace
+        if ([self.dataSource respondsToSelector:@selector(collectionView:itemAtIndexPath:didReplaceWithIndexPath:)]) {
+            [self.dataSource collectionView:self.collectionView itemAtIndexPath:atIndexPath didReplaceWithIndexPath:toIndexPath];
+        }
+    } completion:nil];
+    
+    return YES;
 }
 
 #pragma mark UIGestureRecognizerDelegate
@@ -370,7 +412,9 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
         self.collectionView.contentOffset = CGPointMake(contentOffset.x, contentOffset.y + increment);
     } completion:nil];
     
-    [self moveItemIfNeeded];
+    if (![self moveItemIfNeeded]) {
+        [self replaceItemIfNeeded];
+    }
 }
 
 - (UIImage *)imageFromCollectionViewCell:(UICollectionViewCell *)cell {
