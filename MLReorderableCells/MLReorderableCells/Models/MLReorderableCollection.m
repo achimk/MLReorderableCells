@@ -199,26 +199,40 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
             }
             
             UIView * reorderableCollectionContainer = [self reorderableCollectionContainer];
+            CGPoint fakeCellCenter = CGPointMake(CGRectGetMidX(_cellFakeView.frame), CGRectGetMidY(_cellFakeView.frame));
             CGRect fakeCellRect = [reorderableCollectionContainer convertRect:_cellFakeView.frame toView:self.collectionView];
+            CGRect visibleRect = CGRectZero;
+            visibleRect.origin = self.collectionView.contentOffset;
+            visibleRect.size = self.collectionView.frame.size;
+            CGRect collectionViewRect = [self.collectionView convertRect:visibleRect toView:reorderableCollectionContainer];
             
-#warning Add ignore for auto scroll when dragged cell is outside of collection view
-            // scroll
-            if (CGRectGetMaxY(fakeCellRect) >= self.collectionView.contentOffset.y + (self.collectionView.bounds.size.height - _scrollTrigerEdgeInsets.bottom -_scrollTrigerPadding.bottom)) {
-                if (ceilf(self.collectionView.contentOffset.y) < self.collectionView.contentSize.height - self.collectionView.bounds.size.height) {
-                    _scrollDirection = MLScrollDirectionDown;
-                    [self setupDisplayLink];
+            // Check dragged center point is inside of collection view frame
+            if (CGRectContainsPoint(collectionViewRect, fakeCellCenter)) {
+                // Scrolls down
+                if (CGRectGetMaxY(fakeCellRect) >= self.collectionView.contentOffset.y + (self.collectionView.bounds.size.height - _scrollTrigerEdgeInsets.bottom -_scrollTrigerPadding.bottom)) {
+                    if (ceilf(self.collectionView.contentOffset.y) < self.collectionView.contentSize.height - self.collectionView.bounds.size.height) {
+                        _scrollDirection = MLScrollDirectionDown;
+                        [self setupDisplayLink];
+                    }
+                }
+                // Scrolls up
+                else if (CGRectGetMinY(fakeCellRect) <= self.collectionView.contentOffset.y + _scrollTrigerEdgeInsets.top + _scrollTrigerPadding.top) {
+                    if (self.collectionView.contentOffset.y > -self.collectionView.contentInset.top) {
+                        _scrollDirection = MLScrollDirectionUp;
+                        [self setupDisplayLink];
+                    }
+                }
+                // Ignore scrolling
+                else {
+                    _scrollDirection = MLScrollDirectionNone;
+                    [self invalidateDisplayLink];
                 }
             }
-            else if (CGRectGetMinY(fakeCellRect) <= self.collectionView.contentOffset.y + _scrollTrigerEdgeInsets.top + _scrollTrigerPadding.top) {
-                if (self.collectionView.contentOffset.y > -self.collectionView.contentInset.top) {
-                    _scrollDirection = MLScrollDirectionUp;
-                    [self setupDisplayLink];
-                }
-            }
-            else {
+            else { // Center poiny outside of collection view frame
                 _scrollDirection = MLScrollDirectionNone;
                 [self invalidateDisplayLink];
             }
+        
         } break;
             
         case UIGestureRecognizerStateCancelled:
