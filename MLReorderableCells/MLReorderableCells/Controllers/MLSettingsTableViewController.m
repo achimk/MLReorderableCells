@@ -10,15 +10,6 @@
 #import "MLDataCollectionViewController.h"
 #import "MLTableViewCell.h"
 
-typedef NS_ENUM(NSUInteger, MLOptions) {
-    MLOptionUseMainContainer,
-    MLOptionReorderItems,
-    MLOptionDeleteItems,
-    MLOptionMoveItems,
-    MLOptionReplaceItems,
-    MLOptionCount
-};
-
 #pragma mark - MLSettingsTableViewController
 
 @interface MLSettingsTableViewController ()
@@ -63,14 +54,17 @@ typedef NS_ENUM(NSUInteger, MLOptions) {
         case MLOptionReorderItems: {
             self.collectionViewController.canReorderItems = !self.collectionViewController.canReorderItems;
         } break;
+        case MLOptionInsertItems: {
+            self.collectionViewController.canInsertItems = !self.collectionViewController.canInsertItems;
+        } break;
         case MLOptionDeleteItems: {
             self.collectionViewController.canDeleteItems = !self.collectionViewController.canDeleteItems;
         } break;
-        case MLOptionMoveItems: {
-            self.collectionViewController.canMoveItems = !self.collectionViewController.canMoveItems;
-        } break;
         case MLOptionReplaceItems: {
             self.collectionViewController.canReplaceItems = !self.collectionViewController.canReplaceItems;
+        } break;
+        case MLOptionMoveItems: {
+            self.collectionViewController.canMoveItems = !self.collectionViewController.canMoveItems;
         } break;
     }
     
@@ -91,17 +85,21 @@ typedef NS_ENUM(NSUInteger, MLOptions) {
             cell.textLabel.text = @"Allow reorder";
             cell.accessoryType = (self.collectionViewController.canReorderItems) ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;
         } break;
+        case MLOptionInsertItems: {
+            cell.textLabel.text = @"Allow insert";
+            cell.accessoryType = (self.collectionViewController.canInsertItems) ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;
+        } break;
         case MLOptionDeleteItems: {
             cell.textLabel.text = @"Allow delete";
             cell.accessoryType = (self.collectionViewController.canDeleteItems) ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;
         } break;
-        case MLOptionMoveItems: {
-            cell.textLabel.text = @"Allow move";
-            cell.accessoryType = (self.collectionViewController.canMoveItems) ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;
-        } break;
         case MLOptionReplaceItems: {
             cell.textLabel.text = @"Allow replace";
             cell.accessoryType = (self.collectionViewController.canReplaceItems) ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;
+        } break;
+        case MLOptionMoveItems: {
+            cell.textLabel.text = @"Allow move";
+            cell.accessoryType = (self.collectionViewController.canMoveItems) ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;
         } break;
     }
     

@@ -12,8 +12,9 @@
 
 @property (nonatomic, readwrite, assign) BOOL useMainContainer;
 @property (nonatomic, readwrite, assign) BOOL canReorderItems;
+@property (nonatomic, readwrite, assign) BOOL canInsertItems;
 @property (nonatomic, readwrite, assign) BOOL canDeleteItems;
-@property (nonatomic, readwrite, assign) BOOL canMoveItems;
 @property (nonatomic, readwrite, assign) BOOL canReplaceItems;
+@property (nonatomic, readwrite, assign) BOOL canMoveItems;
 
 @end

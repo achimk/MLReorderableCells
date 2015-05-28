@@ -30,8 +30,6 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
 @property (nonatomic, readonly, assign) MLScrollDirection scrollDirection;
 
 @property (nonatomic, readwrite, assign) BOOL insideCollectionFrame;
-@property (nonatomic, readwrite, assign) BOOL itemInserted;
-@property (nonatomic, readwrite, assign) BOOL itemDeleted;
 @property (nonatomic, readwrite, strong) UIView * reorderableCollectionContainer;
 
 @end
@@ -77,14 +75,20 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
         
         if (insideCollectionFrame) {
             if (!self.reorderingCellIndexPath) {
-                self.itemInserted = [self insertItemIfNeeded];
+                [self insertItemIfNeeded];
             }
         }
         else {
             if (self.reorderingCellIndexPath) {
-                self.itemDeleted = [self deleteItemIfNeeded];
+                [self deleteItemIfNeeded];
             }
         }
+    }
+    else if (insideCollectionFrame && !self.reorderingCellIndexPath) {
+        [self insertItemIfNeeded];
+    }
+    else if (!insideCollectionFrame && self.reorderingCellIndexPath) {
+        [self deleteItemIfNeeded];
     }
 }
 
@@ -207,9 +211,6 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
                 _cellFakeViewCenter = CGPointZero;
 
                 self.insideCollectionFrame = NO;
-                self.itemInserted = NO;
-                self.itemDeleted = NO;
-                
                 self.reorderableCollectionContainer = nil;
                 [self.collectionView.collectionViewLayout invalidateLayout];
                 
@@ -233,16 +234,6 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
             _panTranslation = [gestureRecognizer translationInView:self.collectionView];
             _cellFakeView.center = CGPointMake(_cellFakeViewCenter.x + _panTranslation.x, _cellFakeViewCenter.y + _panTranslation.y);
             
-            // item is delete already
-            if (self.itemDeleted) {
-                return;
-            }
-            
-            // move layout
-            if (![self moveItemIfNeeded]) {
-                [self replaceItemIfNeeded];
-            }
-            
             UIView * reorderableCollectionContainer = [self reorderableCollectionContainer];
             CGPoint fakeCellCenter = CGPointMake(CGRectGetMidX(_cellFakeView.frame), CGRectGetMidY(_cellFakeView.frame));
             CGRect fakeCellRect = [reorderableCollectionContainer convertRect:_cellFakeView.frame toView:self.collectionView];
@@ -251,6 +242,16 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
             visibleRect.size = self.collectionView.frame.size;
             CGRect collectionViewRect = [self.collectionView convertRect:visibleRect toView:reorderableCollectionContainer];
             self.insideCollectionFrame = CGRectContainsPoint(collectionViewRect, fakeCellCenter);
+            
+            // item is deleted
+            if (!self.reorderingCellIndexPath) {
+                return;
+            }
+            
+            // move layout
+            if (![self replaceItemIfNeeded]) {
+                [self moveItemIfNeeded];
+            }
             
             // Check dragged center point is inside of collection view frame
             if (self.insideCollectionFrame) {
@@ -291,70 +292,75 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
 }
 
 - (BOOL)insertItemIfNeeded {
-    return NO;
-}
-
-- (BOOL)deleteItemIfNeeded {
-    NSIndexPath * atIndexPath = _reorderingCellIndexPath;
+    UIView * reorderableCollectionContainer = [self reorderableCollectionContainer];
+    CGPoint point = [reorderableCollectionContainer convertPoint:_cellFakeView.center toView:self.collectionView];
+    NSIndexPath * indexPath = [self.collectionView indexPathForItemAtPoint:point];
     
-    // can delete
-    if ([self.dataSource respondsToSelector:@selector(collectionView:canDeleteItemAtIndexPath:)]) {
-        if (![self.dataSource collectionView:self.collectionView canDeleteItemAtIndexPath:atIndexPath]) {
+    if (!indexPath) {
+        if ([self.dataSource respondsToSelector:@selector(indexPathForNewItemInCollectionView:)]) {
+            indexPath = [self.dataSource indexPathForNewItemInCollectionView:self.collectionView];
+        }
+        
+        if (!indexPath) {
             return NO;
         }
     }
     
-    // will delete
-    if ([self.dataSource respondsToSelector:@selector(collectionView:willDeleteItemAtIndexPath:)]) {
-        [self.dataSource collectionView:self.collectionView willDeleteItemAtIndexPath:atIndexPath];
+    // can insert
+    if ([self.dataSource respondsToSelector:@selector(collectionView:canInsertItemAtIndexPath:)]) {
+        if (![self.dataSource collectionView:self.collectionView canInsertItemAtIndexPath:indexPath]) {
+            return NO;
+        }
     }
     
-    // delete
+    // will insert
+    if ([self.dataSource respondsToSelector:@selector(collectionView:willInsertItemAtIndexPath:)]) {
+        [self.dataSource collectionView:self.collectionView willInsertItemAtIndexPath:indexPath];
+    }
+    
+    // insert
     [self.collectionView performBatchUpdates:^{
-        // delete cell indexPath
-        _reorderingCellIndexPath = nil;
-        [self.collectionView deleteItemsAtIndexPaths:@[atIndexPath]];
+        // insert cell indexPath
+        _reorderingCellIndexPath = indexPath;
+        [self.collectionView insertItemsAtIndexPaths:@[indexPath]];
         
-        // did delete
-        if ([self.dataSource respondsToSelector:@selector(collectionView:didDeleteItemAtIndexPath:)]) {
-            [self.dataSource collectionView:self.collectionView didDeleteItemAtIndexPath:atIndexPath];
+        // did insert
+        if ([self.dataSource respondsToSelector:@selector(collectionView:didInsertItemAtIndexPath:)]) {
+            [self.dataSource collectionView:self.collectionView didInsertItemAtIndexPath:indexPath];
         }
     } completion:nil];
     
     return YES;
 }
 
-- (BOOL)moveItemIfNeeded {
-    UIView * reorderableCollectionContainer = [self reorderableCollectionContainer];
-    CGPoint point = [reorderableCollectionContainer convertPoint:_cellFakeView.center toView:self.collectionView];
-    NSIndexPath * atIndexPath = _reorderingCellIndexPath;
-    NSIndexPath * toIndexPath = [self.collectionView indexPathForItemAtPoint:point];
+- (BOOL)deleteItemIfNeeded {
+    NSIndexPath * indexPath = _reorderingCellIndexPath;
     
-    if (nil == toIndexPath || [atIndexPath isEqual:toIndexPath]) {
+    if (!indexPath) {
         return NO;
     }
     
-    // can move
-    if ([self.dataSource respondsToSelector:@selector(collectionView:itemAtIndexPath:canMoveToIndexPath:)]) {
-        if (![self.dataSource collectionView:self.collectionView itemAtIndexPath:atIndexPath canMoveToIndexPath:toIndexPath]) {
+    // can delete
+    if ([self.dataSource respondsToSelector:@selector(collectionView:canDeleteItemAtIndexPath:)]) {
+        if (![self.dataSource collectionView:self.collectionView canDeleteItemAtIndexPath:indexPath]) {
             return NO;
         }
     }
     
-    // will move
-    if ([self.dataSource respondsToSelector:@selector(collectionView:itemAtIndexPath:willMoveToIndexPath:)]) {
-        [self.dataSource collectionView:self.collectionView itemAtIndexPath:atIndexPath willMoveToIndexPath:toIndexPath];
+    // will delete
+    if ([self.dataSource respondsToSelector:@selector(collectionView:willDeleteItemAtIndexPath:)]) {
+        [self.dataSource collectionView:self.collectionView willDeleteItemAtIndexPath:indexPath];
     }
     
-    // move
+    // delete
     [self.collectionView performBatchUpdates:^{
-        // update cell indexPath
-        _reorderingCellIndexPath = toIndexPath;
-        [self.collectionView moveItemAtIndexPath:atIndexPath toIndexPath:toIndexPath];
+        // delete cell indexPath
+        _reorderingCellIndexPath = nil;
+        [self.collectionView deleteItemsAtIndexPaths:@[indexPath]];
         
-        // did move
-        if ([self.dataSource respondsToSelector:@selector(collectionView:itemAtIndexPath:didMoveToIndexPath:)]) {
-            [self.dataSource collectionView:self.collectionView itemAtIndexPath:atIndexPath didMoveToIndexPath:toIndexPath];
+        // did delete
+        if ([self.dataSource respondsToSelector:@selector(collectionView:didDeleteItemAtIndexPath:)]) {
+            [self.dataSource collectionView:self.collectionView didDeleteItemAtIndexPath:indexPath];
         }
     } completion:nil];
     
@@ -393,6 +399,43 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
         // did replace
         if ([self.dataSource respondsToSelector:@selector(collectionView:itemAtIndexPath:didReplaceWithIndexPath:)]) {
             [self.dataSource collectionView:self.collectionView itemAtIndexPath:atIndexPath didReplaceWithIndexPath:toIndexPath];
+        }
+    } completion:nil];
+    
+    return YES;
+}
+
+- (BOOL)moveItemIfNeeded {
+    UIView * reorderableCollectionContainer = [self reorderableCollectionContainer];
+    CGPoint point = [reorderableCollectionContainer convertPoint:_cellFakeView.center toView:self.collectionView];
+    NSIndexPath * atIndexPath = _reorderingCellIndexPath;
+    NSIndexPath * toIndexPath = [self.collectionView indexPathForItemAtPoint:point];
+    
+    if (nil == toIndexPath || [atIndexPath isEqual:toIndexPath]) {
+        return NO;
+    }
+    
+    // can move
+    if ([self.dataSource respondsToSelector:@selector(collectionView:itemAtIndexPath:canMoveToIndexPath:)]) {
+        if (![self.dataSource collectionView:self.collectionView itemAtIndexPath:atIndexPath canMoveToIndexPath:toIndexPath]) {
+            return NO;
+        }
+    }
+    
+    // will move
+    if ([self.dataSource respondsToSelector:@selector(collectionView:itemAtIndexPath:willMoveToIndexPath:)]) {
+        [self.dataSource collectionView:self.collectionView itemAtIndexPath:atIndexPath willMoveToIndexPath:toIndexPath];
+    }
+    
+    // move
+    [self.collectionView performBatchUpdates:^{
+        // update cell indexPath
+        _reorderingCellIndexPath = toIndexPath;
+        [self.collectionView moveItemAtIndexPath:atIndexPath toIndexPath:toIndexPath];
+        
+        // did move
+        if ([self.dataSource respondsToSelector:@selector(collectionView:itemAtIndexPath:didMoveToIndexPath:)]) {
+            [self.dataSource collectionView:self.collectionView itemAtIndexPath:atIndexPath didMoveToIndexPath:toIndexPath];
         }
     } completion:nil];
     
@@ -568,8 +611,8 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
         self.collectionView.contentOffset = CGPointMake(contentOffset.x, contentOffset.y + increment);
     } completion:nil];
     
-    if (![self moveItemIfNeeded]) {
-        [self replaceItemIfNeeded];
+    if (![self replaceItemIfNeeded]) {
+        [self moveItemIfNeeded];
     }
 
 }
@@ -627,8 +670,8 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
         self.collectionView.contentOffset = CGPointMake(contentOffset.x, contentOffset.y + increment);
     } completion:nil];
     
-    if (![self moveItemIfNeeded]) {
-        [self replaceItemIfNeeded];
+    if (![self replaceItemIfNeeded]) {
+        [self moveItemIfNeeded];
     }
 }
 

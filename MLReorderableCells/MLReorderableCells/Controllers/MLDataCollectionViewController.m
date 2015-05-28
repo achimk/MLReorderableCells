@@ -22,6 +22,7 @@
 
 @property (nonatomic, readwrite, strong) RZArrayCollectionList * resultsController;
 @property (nonatomic, readwrite, strong) MLReorderableCollection * reorderableCollection;
+@property (nonatomic, readwrite, strong) id cachedObject;
 
 @end
 
@@ -40,9 +41,10 @@
     
     self.useMainContainer = YES;
     self.canReorderItems = YES;
+    self.canInsertItems = YES;
     self.canDeleteItems = YES;
-    self.canMoveItems = NO;
     self.canReplaceItems = YES;
+    self.canMoveItems = NO;
 
     self.resultsController = [[RZArrayCollectionList alloc] initWithArray:@[] sectionNameKeyPath:nil];
     self.reorderableCollection = [[MLReorderableCollection alloc] initWithCollectionView:self.collectionView];
@@ -91,7 +93,7 @@
 - (IBAction)settingsAction:(id)sender {
     MLSettingsTableViewController * settingsViewController = [[MLSettingsTableViewController alloc] initWithCollectionViewController:self];
     UIPopoverController * popover = [[UIPopoverController alloc] initWithContentViewController:settingsViewController];
-    popover.popoverContentSize = CGSizeMake(320.0f, 300.0f);
+    popover.popoverContentSize = CGSizeMake(320.0f, MLOptionCount * 44.0f);
     [popover presentPopoverFromBarButtonItem:sender permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
 }
 
@@ -121,30 +123,36 @@
     return (self.useMainContainer) ? self.splitViewController.view : collectionView;
 }
 
+- (NSIndexPath *)indexPathForNewItemInCollectionView:(UICollectionView *)collectionView {
+    return (0 == self.resultsController.listObjects.count) ? [NSIndexPath indexPathForRow:0 inSection:0] : nil;
+}
+
+#pragma mark Insert
+
+- (BOOL)collectionView:(UICollectionView *)collectionView canInsertItemAtIndexPath:(NSIndexPath *)indexPath {
+    return self.canInsertItems;
+}
+
+- (void)collectionView:(UICollectionView *)collectionView willInsertItemAtIndexPath:(NSIndexPath *)indexPath {
+}
+
+- (void)collectionView:(UICollectionView *)collectionView didInsertItemAtIndexPath:(NSIndexPath *)indexPath {
+    [self.resultsController insertObject:self.cachedObject atIndexPath:indexPath];
+    self.cachedObject = nil;
+}
+
 #pragma mark Delete
 
-- (BOOL)collectionView:(UICollectionView *)collectionView canDeleteItemAtIndexPath:(NSIndexPath *)atIndexPath {
+- (BOOL)collectionView:(UICollectionView *)collectionView canDeleteItemAtIndexPath:(NSIndexPath *)indexPath {
     return self.canDeleteItems;
 }
 
-- (void)collectionView:(UICollectionView *)collectionView willDeleteItemAtIndexPath:(NSIndexPath *)atIndexPath {
+- (void)collectionView:(UICollectionView *)collectionView willDeleteItemAtIndexPath:(NSIndexPath *)indexPath {
 }
 
-- (void)collectionView:(UICollectionView *)collectionView didDeleteItemAtIndexPath:(NSIndexPath *)atIndexPath {
-    [self.resultsController removeObjectAtIndexPath:atIndexPath];
-}
-
-#pragma mark Move
-
-- (BOOL)collectionView:(UICollectionView *)collectionView itemAtIndexPath:(NSIndexPath *)fromIndexPath canMoveToIndexPath:(NSIndexPath *)toIndexPath {
-    return self.canMoveItems;
-}
-
-- (void)collectionView:(UICollectionView *)collectionView itemAtIndexPath:(NSIndexPath *)fromIndexPath willMoveToIndexPath:(NSIndexPath *)toIndexPath {
-}
-
-- (void)collectionView:(UICollectionView *)collectionView itemAtIndexPath:(NSIndexPath *)fromIndexPath didMoveToIndexPath:(NSIndexPath *)toIndexPath {
-    [self.resultsController moveObjectAtIndexPath:fromIndexPath toIndexPath:toIndexPath];
+- (void)collectionView:(UICollectionView *)collectionView didDeleteItemAtIndexPath:(NSIndexPath *)indexPath {
+    self.cachedObject = [self.resultsController objectAtIndexPath:indexPath];
+    [self.resultsController removeObjectAtIndexPath:indexPath];
 }
 
 #pragma mark Replace
@@ -162,6 +170,19 @@
     
     [self.resultsController replaceObjectAtIndexPath:toIndexPath withObject:fromObject];
     [self.resultsController replaceObjectAtIndexPath:fromIndexPath withObject:toObject];
+}
+
+#pragma mark Move
+
+- (BOOL)collectionView:(UICollectionView *)collectionView itemAtIndexPath:(NSIndexPath *)fromIndexPath canMoveToIndexPath:(NSIndexPath *)toIndexPath {
+    return self.canMoveItems;
+}
+
+- (void)collectionView:(UICollectionView *)collectionView itemAtIndexPath:(NSIndexPath *)fromIndexPath willMoveToIndexPath:(NSIndexPath *)toIndexPath {
+}
+
+- (void)collectionView:(UICollectionView *)collectionView itemAtIndexPath:(NSIndexPath *)fromIndexPath didMoveToIndexPath:(NSIndexPath *)toIndexPath {
+    [self.resultsController moveObjectAtIndexPath:fromIndexPath toIndexPath:toIndexPath];
 }
 
 #pragma mark UICollectionViewDelegate

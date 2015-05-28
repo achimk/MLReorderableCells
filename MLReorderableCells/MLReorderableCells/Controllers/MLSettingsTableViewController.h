@@ -8,6 +8,16 @@
 
 #import "MLTableViewController.h"
 
+typedef NS_ENUM(NSUInteger, MLOptions) {
+    MLOptionUseMainContainer,
+    MLOptionReorderItems,
+    MLOptionInsertItems,
+    MLOptionDeleteItems,
+    MLOptionReplaceItems,
+    MLOptionMoveItems,
+    MLOptionCount
+};
+
 @class MLDataCollectionViewController;
 
 @interface MLSettingsTableViewController : MLTableViewController
