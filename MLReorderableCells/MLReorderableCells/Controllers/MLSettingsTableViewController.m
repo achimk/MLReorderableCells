@@ -13,6 +13,7 @@
 typedef NS_ENUM(NSUInteger, MLOptions) {
     MLOptionUseMainContainer,
     MLOptionReorderItems,
+    MLOptionDeleteItems,
     MLOptionMoveItems,
     MLOptionReplaceItems,
     MLOptionCount
@@ -62,6 +63,9 @@ typedef NS_ENUM(NSUInteger, MLOptions) {
         case MLOptionReorderItems: {
             self.collectionViewController.canReorderItems = !self.collectionViewController.canReorderItems;
         } break;
+        case MLOptionDeleteItems: {
+            self.collectionViewController.canDeleteItems = !self.collectionViewController.canDeleteItems;
+        } break;
         case MLOptionMoveItems: {
             self.collectionViewController.canMoveItems = !self.collectionViewController.canMoveItems;
         } break;
@@ -86,6 +90,10 @@ typedef NS_ENUM(NSUInteger, MLOptions) {
         case MLOptionReorderItems: {
             cell.textLabel.text = @"Allow reorder";
             cell.accessoryType = (self.collectionViewController.canReorderItems) ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;
+        } break;
+        case MLOptionDeleteItems: {
+            cell.textLabel.text = @"Allow delete";
+            cell.accessoryType = (self.collectionViewController.canDeleteItems) ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;
         } break;
         case MLOptionMoveItems: {
             cell.textLabel.text = @"Allow move";

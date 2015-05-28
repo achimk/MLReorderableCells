@@ -29,6 +29,9 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
 @property (nonatomic, readonly, assign) UIEdgeInsets scrollTrigerPadding;
 @property (nonatomic, readonly, assign) MLScrollDirection scrollDirection;
 
+@property (nonatomic, readwrite, assign) BOOL insideCollectionFrame;
+@property (nonatomic, readwrite, assign) BOOL itemInserted;
+@property (nonatomic, readwrite, assign) BOOL itemDeleted;
 @property (nonatomic, readwrite, strong) UIView * reorderableCollectionContainer;
 
 @end
@@ -66,6 +69,25 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
     return self;
 }
 
+#pragma mark Accessors
+
+- (void)setInsideCollectionFrame:(BOOL)insideCollectionFrame {
+    if (insideCollectionFrame != _insideCollectionFrame) {
+        _insideCollectionFrame = insideCollectionFrame;
+        
+        if (insideCollectionFrame) {
+            if (!self.reorderingCellIndexPath) {
+                self.itemInserted = [self insertItemIfNeeded];
+            }
+        }
+        else {
+            if (self.reorderingCellIndexPath) {
+                self.itemDeleted = [self deleteItemIfNeeded];
+            }
+        }
+    }
+}
+
 #pragma mark Gesture Callbacks
 
 - (void)handleLongPressGesture:(UILongPressGestureRecognizer *)gestureRecognizer {
@@ -91,6 +113,7 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
             
             // indexPath
             _reorderingCellIndexPath = indexPath;
+            _insideCollectionFrame = YES;
 
             // scrolls top off
             self.collectionView.scrollsToTop = NO;
@@ -144,6 +167,7 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
         case UIGestureRecognizerStateEnded:
         case UIGestureRecognizerStateCancelled: {
             NSIndexPath * currentCellIndexPath = _reorderingCellIndexPath;
+            
             // will end dragging
             if ([self.delegate respondsToSelector:@selector(collectionView:willEndDraggingItemAtIndexPath:)]) {
                 [self.delegate collectionView:self.collectionView willEndDraggingItemAtIndexPath:currentCellIndexPath];
@@ -156,13 +180,25 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
             [self invalidateDisplayLink];
             
             // remove fake view
-            UICollectionViewLayoutAttributes * attributes = [self.collectionView.collectionViewLayout layoutAttributesForItemAtIndexPath:currentCellIndexPath];
-            UIView * reorderableCollectionContainer = [self reorderableCollectionContainer];
-            CGRect frame = [self.collectionView convertRect:attributes.frame toView:reorderableCollectionContainer];
+            CGRect frame = CGRectZero;
+            CGAffineTransform transform = CGAffineTransformIdentity;
+            
+            // back to current frame
+            if (currentCellIndexPath) {
+                UICollectionViewLayoutAttributes * attributes = [self.collectionView.collectionViewLayout layoutAttributesForItemAtIndexPath:currentCellIndexPath];
+                UIView * reorderableCollectionContainer = [self reorderableCollectionContainer];
+                frame = [self.collectionView convertRect:attributes.frame toView:reorderableCollectionContainer];
+            }
             
             [UIView animateWithDuration:.3f delay:0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut animations:^{
-                _cellFakeView.transform = CGAffineTransformIdentity;
-                _cellFakeView.frame = frame;
+                if (currentCellIndexPath) { // move animation to original frame
+                    _cellFakeView.transform = transform;
+                    _cellFakeView.frame = frame;
+                }
+                else { // delete animation
+                    _cellFakeView.transform = CGAffineTransformMakeScale(0.01f, 0.01f);
+                    _cellFakeView.alpha = 0.0f;
+                }
             } completion:^(BOOL finished) {
                 [_cellFakeView removeFromSuperview];
                 _cellFakeView = nil;
@@ -170,6 +206,10 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
                 _reorderingCellCenter = CGPointZero;
                 _cellFakeViewCenter = CGPointZero;
 
+                self.insideCollectionFrame = NO;
+                self.itemInserted = NO;
+                self.itemDeleted = NO;
+                
                 self.reorderableCollectionContainer = nil;
                 [self.collectionView.collectionViewLayout invalidateLayout];
                 
@@ -193,6 +233,11 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
             _panTranslation = [gestureRecognizer translationInView:self.collectionView];
             _cellFakeView.center = CGPointMake(_cellFakeViewCenter.x + _panTranslation.x, _cellFakeViewCenter.y + _panTranslation.y);
             
+            // item is delete already
+            if (self.itemDeleted) {
+                return;
+            }
+            
             // move layout
             if (![self moveItemIfNeeded]) {
                 [self replaceItemIfNeeded];
@@ -205,9 +250,10 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
             visibleRect.origin = self.collectionView.contentOffset;
             visibleRect.size = self.collectionView.frame.size;
             CGRect collectionViewRect = [self.collectionView convertRect:visibleRect toView:reorderableCollectionContainer];
+            self.insideCollectionFrame = CGRectContainsPoint(collectionViewRect, fakeCellCenter);
             
             // Check dragged center point is inside of collection view frame
-            if (CGRectContainsPoint(collectionViewRect, fakeCellCenter)) {
+            if (self.insideCollectionFrame) {
                 // Scrolls down
                 if (CGRectGetMaxY(fakeCellRect) >= self.collectionView.contentOffset.y + (self.collectionView.bounds.size.height - _scrollTrigerEdgeInsets.bottom -_scrollTrigerPadding.bottom)) {
                     if (ceilf(self.collectionView.contentOffset.y) < self.collectionView.contentSize.height - self.collectionView.bounds.size.height) {
@@ -242,6 +288,40 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
             
         default: break;
     }
+}
+
+- (BOOL)insertItemIfNeeded {
+    return NO;
+}
+
+- (BOOL)deleteItemIfNeeded {
+    NSIndexPath * atIndexPath = _reorderingCellIndexPath;
+    
+    // can delete
+    if ([self.dataSource respondsToSelector:@selector(collectionView:canDeleteItemAtIndexPath:)]) {
+        if (![self.dataSource collectionView:self.collectionView canDeleteItemAtIndexPath:atIndexPath]) {
+            return NO;
+        }
+    }
+    
+    // will delete
+    if ([self.dataSource respondsToSelector:@selector(collectionView:willDeleteItemAtIndexPath:)]) {
+        [self.dataSource collectionView:self.collectionView willDeleteItemAtIndexPath:atIndexPath];
+    }
+    
+    // delete
+    [self.collectionView performBatchUpdates:^{
+        // delete cell indexPath
+        _reorderingCellIndexPath = nil;
+        [self.collectionView deleteItemsAtIndexPaths:@[atIndexPath]];
+        
+        // did delete
+        if ([self.dataSource respondsToSelector:@selector(collectionView:didDeleteItemAtIndexPath:)]) {
+            [self.dataSource collectionView:self.collectionView didDeleteItemAtIndexPath:atIndexPath];
+        }
+    } completion:nil];
+    
+    return YES;
 }
 
 - (BOOL)moveItemIfNeeded {

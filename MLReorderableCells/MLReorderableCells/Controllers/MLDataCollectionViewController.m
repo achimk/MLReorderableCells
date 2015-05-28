@@ -40,6 +40,7 @@
     
     self.useMainContainer = YES;
     self.canReorderItems = YES;
+    self.canDeleteItems = YES;
     self.canMoveItems = NO;
     self.canReplaceItems = YES;
 
@@ -90,7 +91,7 @@
 - (IBAction)settingsAction:(id)sender {
     MLSettingsTableViewController * settingsViewController = [[MLSettingsTableViewController alloc] initWithCollectionViewController:self];
     UIPopoverController * popover = [[UIPopoverController alloc] initWithContentViewController:settingsViewController];
-    popover.popoverContentSize = CGSizeMake(320.0f, 200.0f);
+    popover.popoverContentSize = CGSizeMake(320.0f, 300.0f);
     [popover presentPopoverFromBarButtonItem:sender permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
 }
 
@@ -118,6 +119,19 @@
 
 - (UIView *)reorderableCollectionContainerForCollectionView:(UICollectionView *)collectionView {
     return (self.useMainContainer) ? self.splitViewController.view : collectionView;
+}
+
+#pragma mark Delete
+
+- (BOOL)collectionView:(UICollectionView *)collectionView canDeleteItemAtIndexPath:(NSIndexPath *)atIndexPath {
+    return self.canDeleteItems;
+}
+
+- (void)collectionView:(UICollectionView *)collectionView willDeleteItemAtIndexPath:(NSIndexPath *)atIndexPath {
+}
+
+- (void)collectionView:(UICollectionView *)collectionView didDeleteItemAtIndexPath:(NSIndexPath *)atIndexPath {
+    [self.resultsController removeObjectAtIndexPath:atIndexPath];
 }
 
 #pragma mark Move
