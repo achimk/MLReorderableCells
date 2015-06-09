@@ -220,14 +220,9 @@
 		2771B08C1B0CF41700F69DFA /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				2771B0971B0CF53600F69DFA /* MLTableViewCell.h */,
-				2771B0981B0CF53600F69DFA /* MLTableViewCell.m */,
-				2771B0941B0CF52A00F69DFA /* MLCollectionViewCell.h */,
-				2771B0951B0CF52A00F69DFA /* MLCollectionViewCell.m */,
-				2732952A1B0D1A38000FC492 /* MLColorCollectionViewCell.h */,
-				2732952B1B0D1A38000FC492 /* MLColorCollectionViewCell.m */,
-				27267F741B0D206B008B9870 /* MLFlowLayout.h */,
-				27267F751B0D206B008B9870 /* MLFlowLayout.m */,
+				279722241B1E0AD800576D1A /* CollectionView Layouts */,
+				279722231B1E0AC900576D1A /* CollectionView Cells */,
+				279722221B1E0AAF00576D1A /* TableView Cells */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -241,6 +236,35 @@
 				2771B09F1B0CFE4E00F69DFA /* MLReorderableCollection.m */,
 			);
 			path = Models;
+			sourceTree = "<group>";
+		};
+		279722221B1E0AAF00576D1A /* TableView Cells */ = {
+			isa = PBXGroup;
+			children = (
+				2771B0971B0CF53600F69DFA /* MLTableViewCell.h */,
+				2771B0981B0CF53600F69DFA /* MLTableViewCell.m */,
+			);
+			name = "TableView Cells";
+			sourceTree = "<group>";
+		};
+		279722231B1E0AC900576D1A /* CollectionView Cells */ = {
+			isa = PBXGroup;
+			children = (
+				2771B0941B0CF52A00F69DFA /* MLCollectionViewCell.h */,
+				2771B0951B0CF52A00F69DFA /* MLCollectionViewCell.m */,
+				2732952A1B0D1A38000FC492 /* MLColorCollectionViewCell.h */,
+				2732952B1B0D1A38000FC492 /* MLColorCollectionViewCell.m */,
+			);
+			name = "CollectionView Cells";
+			sourceTree = "<group>";
+		};
+		279722241B1E0AD800576D1A /* CollectionView Layouts */ = {
+			isa = PBXGroup;
+			children = (
+				27267F741B0D206B008B9870 /* MLFlowLayout.h */,
+				27267F751B0D206B008B9870 /* MLFlowLayout.m */,
+			);
+			name = "CollectionView Layouts";
 			sourceTree = "<group>";
 		};
 		5EC5EA882FC836DBB6E0C146 /* Frameworks */ = {
