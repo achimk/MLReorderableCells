@@ -9,10 +9,22 @@
 #import "MLMenuTableViewController.h"
 #import "MLTableViewCell.h"
 #import "MLDataCollectionViewController.h"
+#import "MLFlowLayout.h"
 
-typedef NS_ENUM(NSUInteger, MLMenuItem) {
-    MLMenuItemReorderableCollection,
-    MLMenuItemCount
+typedef NS_ENUM(NSUInteger, MLMenuSection) {
+    MLMenuSectionCollectionView,
+    MLMenuSectionMultipleCollectionViews,
+    MLMenuSectionCount
+};
+
+typedef NS_ENUM(NSUInteger, MLMenuCollection) {
+    MLMenuCollectionVertical,
+    MLMenuCollectionHorizontal,
+    MLMenuCollectionCount
+};
+
+typedef NS_ENUM(NSUInteger, MLMenuMultiple) {
+    MLMenuMultipleCount
 };
 
 #pragma mark - MLMenuTableViewController
@@ -39,14 +51,30 @@ typedef NS_ENUM(NSUInteger, MLMenuItem) {
 #pragma mark UITableViewDelegate
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    UIViewController * viewController = nil;
+    MLDataCollectionViewController * viewController = nil;
     
-    switch (indexPath.row) {
-        case MLMenuItemReorderableCollection: {
-            viewController = [[MLDataCollectionViewController alloc] init];
+    switch (indexPath.section) {
+        case MLMenuSectionCollectionView: {
+            switch (indexPath.row) {
+                case MLMenuCollectionVertical: {
+                    MLFlowLayout * layout = [[MLFlowLayout alloc] init];
+                    layout.scrollDirection = UICollectionViewScrollDirectionVertical;
+                    viewController = [[MLDataCollectionViewController alloc] initWithCollectionViewLayout:layout];
+                } break;
+                case MLMenuCollectionHorizontal: {
+                    MLFlowLayout * layout = [[MLFlowLayout alloc] init];
+                    layout.scrollDirection = UICollectionViewScrollDirectionHorizontal;
+                    viewController = [[MLDataCollectionViewController alloc] initWithCollectionViewLayout:layout];
+                } break;
+            }
+        } break;
+        case MLMenuSectionMultipleCollectionViews: {
+            switch (indexPath.row) {
+                default: break;
+            }
         } break;
     }
-    
+
     if (viewController) {
         UINavigationController * navigationController = self.splitViewController.viewControllers[1];
         [navigationController setViewControllers:@[viewController] animated:YES];
@@ -58,9 +86,21 @@ typedef NS_ENUM(NSUInteger, MLMenuItem) {
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     MLTableViewCell * cell = [MLTableViewCell cellForTableView:tableView indexPath:indexPath];
     
-    switch (indexPath.row) {
-        case MLMenuItemReorderableCollection: {
-            cell.textLabel.text = @"Collection";
+    switch (indexPath.section) {
+        case MLMenuSectionCollectionView: {
+            switch (indexPath.row) {
+                case MLMenuCollectionVertical: {
+                    cell.textLabel.text = @"Vertical";
+                } break;
+                case MLMenuCollectionHorizontal: {
+                    cell.textLabel.text = @"Horizontal";
+                } break;
+            }
+        } break;
+        case MLMenuSectionMultipleCollectionViews: {
+            switch (indexPath.row) {
+                default: break;
+            }
         } break;
     }
     
@@ -68,7 +108,35 @@ typedef NS_ENUM(NSUInteger, MLMenuItem) {
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return MLMenuItemCount;
+    switch (section) {
+        case MLMenuSectionCollectionView: {
+            return MLMenuCollectionCount;
+        }
+        case MLMenuSectionMultipleCollectionViews: {
+            return MLMenuMultipleCount;
+        }
+        default: {
+            return 0;
+        }
+    }
+}
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+    return MLMenuSectionCount;
+}
+
+- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
+    switch (section) {
+        case MLMenuSectionCollectionView: {
+            return @"Collection View";
+        }
+        case MLMenuSectionMultipleCollectionViews: {
+            return @"Multiple";
+        }
+        default: {
+            return nil;
+        }
+    }
 }
 
 @end

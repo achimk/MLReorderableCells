@@ -19,14 +19,14 @@
 		2771B0661B0CF25A00F69DFA /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2771B0651B0CF25A00F69DFA /* Images.xcassets */; };
 		2771B0691B0CF25A00F69DFA /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2771B0671B0CF25A00F69DFA /* LaunchScreen.xib */; };
 		2771B0751B0CF25A00F69DFA /* MLReorderableCellsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2771B0741B0CF25A00F69DFA /* MLReorderableCellsTests.m */; };
-		2771B0831B0CF29400F69DFA /* MLCollectionViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2771B0801B0CF29400F69DFA /* MLCollectionViewController.m */; };
 		2771B0841B0CF29400F69DFA /* MLViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2771B0821B0CF29400F69DFA /* MLViewController.m */; };
 		2771B08B1B0CF40000F69DFA /* MLSplitViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2771B08A1B0CF40000F69DFA /* MLSplitViewController.m */; };
-		2771B0901B0CF47D00F69DFA /* MLTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2771B08F1B0CF47D00F69DFA /* MLTableViewController.m */; };
 		2771B0931B0CF50F00F69DFA /* MLNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2771B0921B0CF50F00F69DFA /* MLNavigationController.m */; };
 		2771B0961B0CF52A00F69DFA /* MLCollectionViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2771B0951B0CF52A00F69DFA /* MLCollectionViewCell.m */; };
 		2771B0991B0CF53600F69DFA /* MLTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2771B0981B0CF53600F69DFA /* MLTableViewCell.m */; };
 		2771B09D1B0CF75C00F69DFA /* MLMenuTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2771B09C1B0CF75C00F69DFA /* MLMenuTableViewController.m */; };
+		27DDA9AC1B41CC58001BCAC3 /* MLCollectionViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 27DDA9A91B41CC58001BCAC3 /* MLCollectionViewController.m */; };
+		27DDA9AD1B41CC58001BCAC3 /* MLTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 27DDA9AB1B41CC58001BCAC3 /* MLTableViewController.m */; };
 		92A8176624C5E7630DE75192 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 889E3F8B2B62F422573A4C21 /* libPods.a */; };
 /* End PBXBuildFile section */
 
@@ -62,15 +62,11 @@
 		2771B06E1B0CF25A00F69DFA /* MLReorderableCellsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MLReorderableCellsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2771B0731B0CF25A00F69DFA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2771B0741B0CF25A00F69DFA /* MLReorderableCellsTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MLReorderableCellsTests.m; sourceTree = "<group>"; };
-		2771B07F1B0CF29400F69DFA /* MLCollectionViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MLCollectionViewController.h; sourceTree = "<group>"; };
-		2771B0801B0CF29400F69DFA /* MLCollectionViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MLCollectionViewController.m; sourceTree = "<group>"; };
 		2771B0811B0CF29400F69DFA /* MLViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MLViewController.h; sourceTree = "<group>"; };
 		2771B0821B0CF29400F69DFA /* MLViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MLViewController.m; sourceTree = "<group>"; };
 		2771B0881B0CF3F000F69DFA /* MLAutorotation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MLAutorotation.h; sourceTree = "<group>"; };
 		2771B0891B0CF40000F69DFA /* MLSplitViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MLSplitViewController.h; sourceTree = "<group>"; };
 		2771B08A1B0CF40000F69DFA /* MLSplitViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MLSplitViewController.m; sourceTree = "<group>"; };
-		2771B08E1B0CF47D00F69DFA /* MLTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MLTableViewController.h; sourceTree = "<group>"; };
-		2771B08F1B0CF47D00F69DFA /* MLTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MLTableViewController.m; sourceTree = "<group>"; };
 		2771B0911B0CF50F00F69DFA /* MLNavigationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MLNavigationController.h; sourceTree = "<group>"; };
 		2771B0921B0CF50F00F69DFA /* MLNavigationController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MLNavigationController.m; sourceTree = "<group>"; };
 		2771B0941B0CF52A00F69DFA /* MLCollectionViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MLCollectionViewCell.h; sourceTree = "<group>"; };
@@ -82,6 +78,10 @@
 		2771B09C1B0CF75C00F69DFA /* MLMenuTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MLMenuTableViewController.m; sourceTree = "<group>"; };
 		2771B09E1B0CFE4E00F69DFA /* MLReorderableCollection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MLReorderableCollection.h; sourceTree = "<group>"; };
 		2771B09F1B0CFE4E00F69DFA /* MLReorderableCollection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MLReorderableCollection.m; sourceTree = "<group>"; };
+		27DDA9A81B41CC58001BCAC3 /* MLCollectionViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MLCollectionViewController.h; sourceTree = "<group>"; };
+		27DDA9A91B41CC58001BCAC3 /* MLCollectionViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MLCollectionViewController.m; sourceTree = "<group>"; };
+		27DDA9AA1B41CC58001BCAC3 /* MLTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MLTableViewController.h; sourceTree = "<group>"; };
+		27DDA9AB1B41CC58001BCAC3 /* MLTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MLTableViewController.m; sourceTree = "<group>"; };
 		35CD80B0404949650439522A /* Pods.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.release.xcconfig; path = "../Pods/Target Support Files/Pods/Pods.release.xcconfig"; sourceTree = "<group>"; };
 		544DA1D7D410CD39147E6096 /* Pods.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.debug.xcconfig; path = "../Pods/Target Support Files/Pods/Pods.debug.xcconfig"; sourceTree = "<group>"; };
 		889E3F8B2B62F422573A4C21 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -189,10 +189,10 @@
 			children = (
 				2771B0811B0CF29400F69DFA /* MLViewController.h */,
 				2771B0821B0CF29400F69DFA /* MLViewController.m */,
-				2771B08E1B0CF47D00F69DFA /* MLTableViewController.h */,
-				2771B08F1B0CF47D00F69DFA /* MLTableViewController.m */,
-				2771B07F1B0CF29400F69DFA /* MLCollectionViewController.h */,
-				2771B0801B0CF29400F69DFA /* MLCollectionViewController.m */,
+				27DDA9A81B41CC58001BCAC3 /* MLCollectionViewController.h */,
+				27DDA9A91B41CC58001BCAC3 /* MLCollectionViewController.m */,
+				27DDA9AA1B41CC58001BCAC3 /* MLTableViewController.h */,
+				27DDA9AB1B41CC58001BCAC3 /* MLTableViewController.m */,
 			);
 			name = "Abstract View Controllers";
 			sourceTree = "<group>";
@@ -421,11 +421,12 @@
 			files = (
 				2771B0931B0CF50F00F69DFA /* MLNavigationController.m in Sources */,
 				2771B09D1B0CF75C00F69DFA /* MLMenuTableViewController.m in Sources */,
+				27DDA9AD1B41CC58001BCAC3 /* MLTableViewController.m in Sources */,
 				273295261B0D1808000FC492 /* MLDataCollectionViewController.m in Sources */,
 				2771B0841B0CF29400F69DFA /* MLViewController.m in Sources */,
 				273295291B0D18AB000FC492 /* MLColorModel.m in Sources */,
 				2732952C1B0D1A38000FC492 /* MLColorCollectionViewCell.m in Sources */,
-				2771B0901B0CF47D00F69DFA /* MLTableViewController.m in Sources */,
+				27DDA9AC1B41CC58001BCAC3 /* MLCollectionViewController.m in Sources */,
 				2771B05E1B0CF25A00F69DFA /* AppDelegate.m in Sources */,
 				2771B05B1B0CF25A00F69DFA /* main.m in Sources */,
 				2771B08B1B0CF40000F69DFA /* MLSplitViewController.m in Sources */,
@@ -434,7 +435,6 @@
 				273295231B0D1702000FC492 /* MLReorderableCollection.m in Sources */,
 				2771B0961B0CF52A00F69DFA /* MLCollectionViewCell.m in Sources */,
 				2771B0991B0CF53600F69DFA /* MLTableViewCell.m in Sources */,
-				2771B0831B0CF29400F69DFA /* MLCollectionViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

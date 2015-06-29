@@ -11,8 +11,9 @@
 typedef NS_ENUM(NSUInteger, MLScrollDirection) {
     MLScrollDirectionNone,
     MLScrollDirectionUp,
-    MLScrollDirectionDown
-#warning Add support for horizontal direction scrolling
+    MLScrollDirectionDown,
+    MLScrollDirectionLeft,
+    MLScrollDirectionRight
 };
 
 #pragma mark - MLReorderableCollection
@@ -69,6 +70,28 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
 
 #pragma mark Accessors
 
+- (BOOL)allowsVerticalScrollDirection {
+    UICollectionViewLayout * layout = self.collectionView.collectionViewLayout;
+    
+    if ([layout isKindOfClass:[UICollectionViewFlowLayout class]]) {
+        UICollectionViewFlowLayout * flowLayout = (UICollectionViewFlowLayout *)layout;
+        return (UICollectionViewScrollDirectionVertical == flowLayout.scrollDirection);
+    }
+    
+    return NO;
+}
+
+- (BOOL)allowsHorizontalScrollDirection {
+    UICollectionViewLayout * layout = self.collectionView.collectionViewLayout;
+    
+    if ([layout isKindOfClass:[UICollectionViewFlowLayout class]]) {
+        UICollectionViewFlowLayout * flowLayout = (UICollectionViewFlowLayout *)layout;
+        return (UICollectionViewScrollDirectionHorizontal == flowLayout.scrollDirection);
+    }
+    
+    return NO;
+}
+
 - (void)setInsideCollectionFrame:(BOOL)insideCollectionFrame {
     if (insideCollectionFrame != _insideCollectionFrame) {
         _insideCollectionFrame = insideCollectionFrame;
@@ -108,6 +131,9 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
                 if (![self.dataSource collectionView:self.collectionView canReorderItemAtIndexPath:indexPath]) {
                     return;
                 }
+            }
+            else {
+                return;
             }
             
             // will begin dragging
@@ -245,6 +271,8 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
             
             // item is deleted
             if (!self.reorderingCellIndexPath) {
+                _scrollDirection = MLScrollDirectionNone;
+                [self invalidateDisplayLink];
                 return;
             }
             
@@ -255,22 +283,51 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
             
             // Check dragged center point is inside of collection view frame
             if (self.insideCollectionFrame) {
-                // Scrolls down
-                if (CGRectGetMaxY(fakeCellRect) >= self.collectionView.contentOffset.y + (self.collectionView.bounds.size.height - _scrollTrigerEdgeInsets.bottom -_scrollTrigerPadding.bottom)) {
-                    if (ceilf(self.collectionView.contentOffset.y) < self.collectionView.contentSize.height - self.collectionView.bounds.size.height) {
-                        _scrollDirection = MLScrollDirectionDown;
-                        [self setupDisplayLink];
+                if ([self allowsVerticalScrollDirection]) {
+                    // Scrolls down
+                    if (CGRectGetMaxY(fakeCellRect) >= self.collectionView.contentOffset.y + (self.collectionView.bounds.size.height - _scrollTrigerEdgeInsets.bottom -_scrollTrigerPadding.bottom)) {
+                        if (ceilf(self.collectionView.contentOffset.y) < self.collectionView.contentSize.height - self.collectionView.bounds.size.height) {
+                            _scrollDirection = MLScrollDirectionDown;
+                            [self setupDisplayLink];
+                        }
+                    }
+                    // Scrolls up
+                    else if (CGRectGetMinY(fakeCellRect) <= self.collectionView.contentOffset.y + _scrollTrigerEdgeInsets.top + _scrollTrigerPadding.top) {
+                        if (self.collectionView.contentOffset.y > -self.collectionView.contentInset.top) {
+                            _scrollDirection = MLScrollDirectionUp;
+                            [self setupDisplayLink];
+                        }
+                    }
+                    // Ignore scrolling
+                    else {
+                        _scrollDirection = MLScrollDirectionNone;
+                        [self invalidateDisplayLink];
                     }
                 }
-                // Scrolls up
-                else if (CGRectGetMinY(fakeCellRect) <= self.collectionView.contentOffset.y + _scrollTrigerEdgeInsets.top + _scrollTrigerPadding.top) {
-                    if (self.collectionView.contentOffset.y > -self.collectionView.contentInset.top) {
-                        _scrollDirection = MLScrollDirectionUp;
-                        [self setupDisplayLink];
+                else if ([self allowsHorizontalScrollDirection]) {
+                    // Scrolls right
+                    if (CGRectGetMaxX(fakeCellRect) >= self.collectionView.contentOffset.x + (self.collectionView.bounds.size.width - _scrollTrigerEdgeInsets.right - _scrollTrigerPadding.right)) {
+                        if (ceilf(self.collectionView.contentOffset.x) < self.collectionView.contentSize.width - self.collectionView.bounds.size.width) {
+                            _scrollDirection = MLScrollDirectionRight;
+                            [self setupDisplayLink];
+                        }
                     }
+                    // Scrolls left
+                    else if (CGRectGetMinX(fakeCellRect) <= self.collectionView.contentOffset.x + _scrollTrigerEdgeInsets.left + _scrollTrigerPadding.left) {
+                        if (self.collectionView.contentOffset.x > -self.collectionView.contentInset.left) {
+                            _scrollDirection = MLScrollDirectionLeft;
+                            [self setupDisplayLink];
+                        }
+                    }
+                    // Ignore scrolling
+                    else {
+                        _scrollDirection = MLScrollDirectionNone;
+                        [self invalidateDisplayLink];
+                    }
+
                 }
-                // Ignore scrolling
                 else {
+                    // Ignore scrolling
                     _scrollDirection = MLScrollDirectionNone;
                     [self invalidateDisplayLink];
                 }
@@ -312,6 +369,9 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
             return NO;
         }
     }
+    else {
+        return NO;
+    }
     
     // will insert
     if ([self.dataSource respondsToSelector:@selector(collectionView:willInsertItemAtIndexPath:)]) {
@@ -345,6 +405,9 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
         if (![self.dataSource collectionView:self.collectionView canDeleteItemAtIndexPath:indexPath]) {
             return NO;
         }
+    }
+    else {
+        return NO;
     }
     
     // will delete
@@ -383,6 +446,9 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
             return NO;
         }
     }
+    else {
+        return NO;
+    }
     
     // will replace
     if ([self.dataSource respondsToSelector:@selector(collectionView:itemAtIndexPath:willReplaceWithIndexPath:)]) {
@@ -420,6 +486,9 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
         if (![self.dataSource collectionView:self.collectionView itemAtIndexPath:atIndexPath canMoveToIndexPath:toIndexPath]) {
             return NO;
         }
+    }
+    else {
+        return NO;
     }
     
     // will move
@@ -573,48 +642,90 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
     UIView * reorderableCollectionContainer = [self reorderableCollectionContainer];
     CGRect fakeCellRect = [reorderableCollectionContainer convertRect:_cellFakeView.frame toView:self.collectionView];
     
-    if (MLScrollDirectionDown == _scrollDirection) {
-        CGFloat percentage = (((CGRectGetMaxY(fakeCellRect) - contentOffset.y) - (boundsSize.height - _scrollTrigerEdgeInsets.bottom - _scrollTrigerPadding.bottom)) / _scrollTrigerEdgeInsets.bottom);
-        increment = 10 * percentage;
-        
-        if (increment >= 10.f) {
-            increment = 10.f;
-        }
-    }
-    else if (MLScrollDirectionUp == _scrollDirection) {
-        CGFloat percentage = (1.f - ((CGRectGetMinY(fakeCellRect) - contentOffset.y - _scrollTrigerPadding.top) / _scrollTrigerEdgeInsets.top));
-        increment = -10.f * percentage;
-        
-        if (increment <= -10.f) {
-            increment = -10.f;
-        }
+    switch (_scrollDirection) {
+        case MLScrollDirectionDown: {
+            CGFloat percentage = (((CGRectGetMaxY(fakeCellRect) - contentOffset.y) - (boundsSize.height - _scrollTrigerEdgeInsets.bottom - _scrollTrigerPadding.bottom)) / _scrollTrigerEdgeInsets.bottom);
+            increment = 10 * percentage;
+            
+            if (increment >= 10.0f) {
+                increment = 10.0f;
+            }
+        } break;
+        case MLScrollDirectionUp: {
+            CGFloat percentage = (1.0f - ((CGRectGetMinY(fakeCellRect) - contentOffset.y - _scrollTrigerPadding.top) / _scrollTrigerEdgeInsets.top));
+            increment = -10.0f * percentage;
+            
+            if (increment <= -10.0f) {
+                increment = -10.0f;
+            }
+        } break;
+        case MLScrollDirectionRight: {
+            CGFloat percentage = (((CGRectGetMaxX(fakeCellRect) - contentOffset.x) - (boundsSize.width - _scrollTrigerEdgeInsets.left - _scrollTrigerPadding.left)) / _scrollTrigerEdgeInsets.left);
+            increment = 10 * percentage;
+            
+            if (increment >= 10.0f) {
+                increment = 10.0f;
+            }
+        } break;
+        case MLScrollDirectionLeft: {
+            CGFloat percentage = (1.0f - ((CGRectGetMinX(fakeCellRect) - contentOffset.x - _scrollTrigerPadding.right) / _scrollTrigerEdgeInsets.right));
+            increment = -10 * percentage;
+            
+            if (increment <= -10.0f) {
+                increment = -10.0f;
+            }
+        } break;
+        case MLScrollDirectionNone: break;
     }
     
-    if (contentOffset.y + increment <= -contentInset.top) {
-        [UIView animateWithDuration:.07f delay:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
-            self.collectionView.contentOffset = CGPointMake(contentOffset.x, -contentInset.top);
-        } completion:nil];
+    if ([self allowsVerticalScrollDirection]) {
+        if (contentOffset.y + increment <= -contentInset.top) {
+            [UIView animateWithDuration:.07f delay:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
+                self.collectionView.contentOffset = CGPointMake(contentOffset.x, -contentInset.top);
+            } completion:nil];
+            
+            [self invalidateDisplayLink];
+            return;
+        }
+        else if (contentOffset.y + increment >= contentSize.height - boundsSize.height - contentInset.bottom) {
+            [UIView animateWithDuration:.07f delay:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
+                self.collectionView.contentOffset = CGPointMake(contentOffset.x, contentSize.height - boundsSize.height - contentInset.bottom);
+            } completion:nil];
+            
+            [self invalidateDisplayLink];
+            return;
+        }
         
-        [self invalidateDisplayLink];
-        return;
-    }
-    else if (contentOffset.y + increment >= contentSize.height - boundsSize.height - contentInset.bottom) {
-        [UIView animateWithDuration:.07f delay:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
-            self.collectionView.contentOffset = CGPointMake(contentOffset.x, contentSize.height - boundsSize.height - contentInset.bottom);
+        [self.collectionView performBatchUpdates:^{
+            self.collectionView.contentOffset = CGPointMake(contentOffset.x, contentOffset.y + increment);
         } completion:nil];
-        
-        [self invalidateDisplayLink];
-        return;
     }
-    
-    [self.collectionView performBatchUpdates:^{
-        self.collectionView.contentOffset = CGPointMake(contentOffset.x, contentOffset.y + increment);
-    } completion:nil];
+    else if ([self allowsHorizontalScrollDirection]) {
+        if (contentOffset.x + increment <= -contentInset.left) {
+            [UIView animateWithDuration:.07f delay:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
+                self.collectionView.contentOffset = CGPointMake(-contentInset.left, contentOffset.y);
+            } completion:nil];
+            
+            [self invalidateDisplayLink];
+            return;
+        }
+        else if (contentOffset.x + increment >= contentSize.width - boundsSize.width - contentInset.right) {
+            [UIView animateWithDuration:.07f delay:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
+                self.collectionView.contentOffset = CGPointMake(contentSize.width - boundsSize.width - contentInset.right, contentOffset.y);
+            } completion:nil];
+            
+            [self invalidateDisplayLink];
+            return;
+        }
+        
+        [self.collectionView performBatchUpdates:^{
+            self.collectionView.contentOffset = CGPointMake(contentOffset.x + increment, contentOffset.y);
+        } completion:nil];
+    }
     
     if (![self replaceItemIfNeeded]) {
         [self moveItemIfNeeded];
     }
-
 }
 
 - (void)collectionViewAutoScroll {
@@ -622,53 +733,106 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
     UIEdgeInsets contentInset = self.collectionView.contentInset;
     CGSize contentSize = self.collectionView.contentSize;
     CGSize boundsSize = self.collectionView.bounds.size;
+    CGRect fakeCellRect = _cellFakeView.frame;
     CGFloat increment = 0;
     
-    if (MLScrollDirectionDown == _scrollDirection) {
-        CGFloat percentage = (((CGRectGetMaxY(_cellFakeView.frame) - contentOffset.y) - (boundsSize.height - _scrollTrigerEdgeInsets.bottom - _scrollTrigerPadding.bottom)) / _scrollTrigerEdgeInsets.bottom);
-        increment = 10 * percentage;
-        
-        if (increment >= 10.f) {
-            increment = 10.f;
-        }
-    }
-    else if (MLScrollDirectionUp == _scrollDirection) {
-        CGFloat percentage = (1.f - ((CGRectGetMinY(_cellFakeView.frame) - contentOffset.y - _scrollTrigerPadding.top) / _scrollTrigerEdgeInsets.top));
-        increment = -10.f * percentage;
-        
-        if (increment <= -10.f) {
-            increment = -10.f;
-        }
-    }
-    
-    if (contentOffset.y + increment <= -contentInset.top) {
-        [UIView animateWithDuration:.07f delay:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
-            CGFloat diff = -contentInset.top - contentOffset.y;
-            self.collectionView.contentOffset = CGPointMake(contentOffset.x, -contentInset.top);
-            _cellFakeViewCenter = CGPointMake(_cellFakeViewCenter.x, _cellFakeViewCenter.y + diff);
-            _cellFakeView.center = CGPointMake(_cellFakeViewCenter.x + _panTranslation.x, _cellFakeViewCenter.y + _panTranslation.y);
-        } completion:nil];
-        
-        [self invalidateDisplayLink];
-        return;
-    }
-    else if (contentOffset.y + increment >= contentSize.height - boundsSize.height - contentInset.bottom) {
-        [UIView animateWithDuration:.07f delay:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
-            CGFloat diff = contentSize.height - boundsSize.height - contentInset.bottom - contentOffset.y;
-            self.collectionView.contentOffset = CGPointMake(contentOffset.x, contentSize.height - boundsSize.height - contentInset.bottom);
-            _cellFakeViewCenter = CGPointMake(_cellFakeViewCenter.x, _cellFakeViewCenter.y + diff);
-            _cellFakeView.center = CGPointMake(_cellFakeViewCenter.x + _panTranslation.x, _cellFakeViewCenter.y + _panTranslation.y);
-        } completion:nil];
-        
-        [self invalidateDisplayLink];
-        return;
+    switch (_scrollDirection) {
+        case MLScrollDirectionDown: {
+            CGFloat percentage = (((CGRectGetMaxY(fakeCellRect) - contentOffset.y) - (boundsSize.height - _scrollTrigerEdgeInsets.bottom - _scrollTrigerPadding.bottom)) / _scrollTrigerEdgeInsets.bottom);
+            increment = 10 * percentage;
+            
+            if (increment >= 10.0f) {
+                increment = 10.0f;
+            }
+        } break;
+        case MLScrollDirectionUp: {
+            CGFloat percentage = (1.0f - ((CGRectGetMinY(fakeCellRect) - contentOffset.y - _scrollTrigerPadding.top) / _scrollTrigerEdgeInsets.top));
+            increment = -10.0f * percentage;
+            
+            if (increment <= -10.0f) {
+                increment = -10.0f;
+            }
+        } break;
+        case MLScrollDirectionRight: {
+            CGFloat percentage = (((CGRectGetMaxX(fakeCellRect) - contentOffset.x) - (boundsSize.width - _scrollTrigerEdgeInsets.left - _scrollTrigerPadding.left)) / _scrollTrigerEdgeInsets.left);
+            increment = 10 * percentage;
+            
+            if (increment >= 10.0f) {
+                increment = 10.0f;
+            }
+        } break;
+        case MLScrollDirectionLeft: {
+            CGFloat percentage = (1.0f - ((CGRectGetMinX(fakeCellRect) - contentOffset.x - _scrollTrigerPadding.right) / _scrollTrigerEdgeInsets.right));
+            increment = -10 * percentage;
+            
+            if (increment <= -10.0f) {
+                increment = -10.0f;
+            }
+        } break;
+        case MLScrollDirectionNone: break;
     }
     
-    [self.collectionView performBatchUpdates:^{
-        _cellFakeViewCenter = CGPointMake(_cellFakeViewCenter.x, _cellFakeViewCenter.y + increment);
-        _cellFakeView.center = CGPointMake(_cellFakeViewCenter.x + _panTranslation.x, _cellFakeViewCenter.y + _panTranslation.y);
-        self.collectionView.contentOffset = CGPointMake(contentOffset.x, contentOffset.y + increment);
-    } completion:nil];
+    if ([self allowsVerticalScrollDirection]) {
+        if (contentOffset.y + increment <= -contentInset.top) {
+            [UIView animateWithDuration:.07f delay:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
+                CGFloat diff = -contentInset.top - contentOffset.y;
+                self.collectionView.contentOffset = CGPointMake(contentOffset.x, -contentInset.top);
+                _cellFakeViewCenter = CGPointMake(_cellFakeViewCenter.x, _cellFakeViewCenter.y + diff);
+                _cellFakeView.center = CGPointMake(_cellFakeViewCenter.x + _panTranslation.x, _cellFakeViewCenter.y + _panTranslation.y);
+            } completion:nil];
+            
+            [self invalidateDisplayLink];
+            return;
+        }
+        else if (contentOffset.y + increment >= contentSize.height - boundsSize.height - contentInset.bottom) {
+            [UIView animateWithDuration:.07f delay:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
+                CGFloat diff = contentSize.height - boundsSize.height - contentInset.bottom - contentOffset.y;
+                self.collectionView.contentOffset = CGPointMake(contentOffset.x, contentSize.height - boundsSize.height - contentInset.bottom);
+                _cellFakeViewCenter = CGPointMake(_cellFakeViewCenter.x, _cellFakeViewCenter.y + diff);
+                _cellFakeView.center = CGPointMake(_cellFakeViewCenter.x + _panTranslation.x, _cellFakeViewCenter.y + _panTranslation.y);
+            } completion:nil];
+            
+            [self invalidateDisplayLink];
+            return;
+        }
+        
+        [self.collectionView performBatchUpdates:^{
+            _cellFakeViewCenter = CGPointMake(_cellFakeViewCenter.x, _cellFakeViewCenter.y + increment);
+            _cellFakeView.center = CGPointMake(_cellFakeViewCenter.x + _panTranslation.x, _cellFakeViewCenter.y + _panTranslation.y);
+            self.collectionView.contentOffset = CGPointMake(contentOffset.x, contentOffset.y + increment);
+        } completion:nil];
+
+    }
+    else if ([self allowsHorizontalScrollDirection]) {
+        if (contentOffset.x + increment <= -contentInset.left) {
+            [UIView animateWithDuration:.07f delay:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
+                CGFloat diff = -contentInset.left - contentOffset.x;
+                self.collectionView.contentOffset = CGPointMake(-contentInset.left, contentOffset.y);
+                _cellFakeViewCenter = CGPointMake(_cellFakeViewCenter.x + diff, _cellFakeViewCenter.y);
+                _cellFakeView.center = CGPointMake(_cellFakeViewCenter.x + _panTranslation.x, _cellFakeViewCenter.y + _panTranslation.y);
+            } completion:nil];
+            
+            [self invalidateDisplayLink];
+            return;
+        }
+        else if (contentOffset.x + increment >= contentSize.width - boundsSize.width - contentInset.right) {
+            [UIView animateWithDuration:.07f delay:0 options:UIViewAnimationOptionCurveEaseOut animations:^{
+                CGFloat diff = contentSize.width - boundsSize.width - contentInset.right - contentOffset.x;
+                self.collectionView.contentOffset = CGPointMake(contentOffset.x, contentSize.height - boundsSize.height - contentInset.bottom);
+                _cellFakeViewCenter = CGPointMake(_cellFakeViewCenter.x + diff, _cellFakeViewCenter.y);
+                _cellFakeView.center = CGPointMake(_cellFakeViewCenter.x + _panTranslation.x, _cellFakeViewCenter.y + _panTranslation.y);
+            } completion:nil];
+            
+            [self invalidateDisplayLink];
+            return;
+        }
+        
+        [self.collectionView performBatchUpdates:^{
+            _cellFakeViewCenter = CGPointMake(_cellFakeViewCenter.x + increment, _cellFakeViewCenter.y);
+            _cellFakeView.center = CGPointMake(_cellFakeViewCenter.x + _panTranslation.x, _cellFakeViewCenter.y + _panTranslation.y);
+            self.collectionView.contentOffset = CGPointMake(contentOffset.x + increment, contentOffset.y);
+        } completion:nil];
+    }
     
     if (![self replaceItemIfNeeded]) {
         [self moveItemIfNeeded];
