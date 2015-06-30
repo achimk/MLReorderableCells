@@ -24,6 +24,8 @@ typedef NS_ENUM(NSUInteger, MLMenuCollection) {
 };
 
 typedef NS_ENUM(NSUInteger, MLMenuMultiple) {
+    MLMenuMultipleDirectionCollections,
+    MLMenuMultipleCollections,
     MLMenuMultipleCount
 };
 
@@ -51,7 +53,7 @@ typedef NS_ENUM(NSUInteger, MLMenuMultiple) {
 #pragma mark UITableViewDelegate
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    MLDataCollectionViewController * viewController = nil;
+    UIViewController * viewController = nil;
     
     switch (indexPath.section) {
         case MLMenuSectionCollectionView: {
@@ -70,6 +72,14 @@ typedef NS_ENUM(NSUInteger, MLMenuMultiple) {
         } break;
         case MLMenuSectionMultipleCollectionViews: {
             switch (indexPath.row) {
+                case MLMenuMultipleDirectionCollections: {
+                    UIStoryboard * storyboard = [UIStoryboard storyboardWithName:@"DirectionCollections" bundle:[NSBundle bundleForClass:[self class]]];
+                    viewController = [storyboard instantiateInitialViewController];
+                } break;
+                case MLMenuMultipleCollections: {
+                    UIStoryboard * storyboard = [UIStoryboard storyboardWithName:@"MultipleCollections" bundle:[NSBundle bundleForClass:[self class]]];
+                    viewController = [storyboard instantiateInitialViewController];
+                } break;
                 default: break;
             }
         } break;
@@ -99,6 +109,12 @@ typedef NS_ENUM(NSUInteger, MLMenuMultiple) {
         } break;
         case MLMenuSectionMultipleCollectionViews: {
             switch (indexPath.row) {
+                case MLMenuMultipleDirectionCollections: {
+                    cell.textLabel.text = @"Directions";
+                } break;
+                case MLMenuMultipleCollections: {
+                    cell.textLabel.text = @"Collections";
+                } break;
                 default: break;
             }
         } break;

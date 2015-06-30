@@ -25,6 +25,12 @@
 		2771B0961B0CF52A00F69DFA /* MLCollectionViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2771B0951B0CF52A00F69DFA /* MLCollectionViewCell.m */; };
 		2771B0991B0CF53600F69DFA /* MLTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 2771B0981B0CF53600F69DFA /* MLTableViewCell.m */; };
 		2771B09D1B0CF75C00F69DFA /* MLMenuTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2771B09C1B0CF75C00F69DFA /* MLMenuTableViewController.m */; };
+		2774ADAC1B432B7200559675 /* DirectionCollections.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2774ADAB1B432B7200559675 /* DirectionCollections.storyboard */; };
+		2774ADAE1B432B8300559675 /* MultipleCollections.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2774ADAD1B432B8300559675 /* MultipleCollections.storyboard */; };
+		2774ADB41B432D6400559675 /* MLDirectionContainerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2774ADB31B432D6400559675 /* MLDirectionContainerViewController.m */; };
+		2774ADB71B432D8300559675 /* MLMultipleContainerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2774ADB61B432D8300559675 /* MLMultipleContainerViewController.m */; };
+		2774ADBA1B432F9D00559675 /* MLDirectionCollectionViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2774ADB91B432F9D00559675 /* MLDirectionCollectionViewController.m */; };
+		2774ADBD1B43312100559675 /* MLColorsCollectionViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2774ADBC1B43312100559675 /* MLColorsCollectionViewController.m */; };
 		27DDA9AC1B41CC58001BCAC3 /* MLCollectionViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 27DDA9A91B41CC58001BCAC3 /* MLCollectionViewController.m */; };
 		27DDA9AD1B41CC58001BCAC3 /* MLTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 27DDA9AB1B41CC58001BCAC3 /* MLTableViewController.m */; };
 		92A8176624C5E7630DE75192 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 889E3F8B2B62F422573A4C21 /* libPods.a */; };
@@ -78,6 +84,16 @@
 		2771B09C1B0CF75C00F69DFA /* MLMenuTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MLMenuTableViewController.m; sourceTree = "<group>"; };
 		2771B09E1B0CFE4E00F69DFA /* MLReorderableCollection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MLReorderableCollection.h; sourceTree = "<group>"; };
 		2771B09F1B0CFE4E00F69DFA /* MLReorderableCollection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MLReorderableCollection.m; sourceTree = "<group>"; };
+		2774ADAB1B432B7200559675 /* DirectionCollections.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = DirectionCollections.storyboard; sourceTree = "<group>"; };
+		2774ADAD1B432B8300559675 /* MultipleCollections.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = MultipleCollections.storyboard; sourceTree = "<group>"; };
+		2774ADB21B432D6400559675 /* MLDirectionContainerViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MLDirectionContainerViewController.h; sourceTree = "<group>"; };
+		2774ADB31B432D6400559675 /* MLDirectionContainerViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MLDirectionContainerViewController.m; sourceTree = "<group>"; };
+		2774ADB51B432D8300559675 /* MLMultipleContainerViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MLMultipleContainerViewController.h; sourceTree = "<group>"; };
+		2774ADB61B432D8300559675 /* MLMultipleContainerViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MLMultipleContainerViewController.m; sourceTree = "<group>"; };
+		2774ADB81B432F9D00559675 /* MLDirectionCollectionViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MLDirectionCollectionViewController.h; sourceTree = "<group>"; };
+		2774ADB91B432F9D00559675 /* MLDirectionCollectionViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MLDirectionCollectionViewController.m; sourceTree = "<group>"; };
+		2774ADBB1B43312100559675 /* MLColorsCollectionViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MLColorsCollectionViewController.h; sourceTree = "<group>"; };
+		2774ADBC1B43312100559675 /* MLColorsCollectionViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MLColorsCollectionViewController.m; sourceTree = "<group>"; };
 		27DDA9A81B41CC58001BCAC3 /* MLCollectionViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MLCollectionViewController.h; sourceTree = "<group>"; };
 		27DDA9A91B41CC58001BCAC3 /* MLCollectionViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MLCollectionViewController.m; sourceTree = "<group>"; };
 		27DDA9AA1B41CC58001BCAC3 /* MLTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MLTableViewController.h; sourceTree = "<group>"; };
@@ -135,6 +151,8 @@
 				2771B08D1B0CF41D00F69DFA /* Models */,
 				2771B08C1B0CF41700F69DFA /* Views */,
 				2771B0621B0CF25A00F69DFA /* Main.storyboard */,
+				2774ADAB1B432B7200559675 /* DirectionCollections.storyboard */,
+				2774ADAD1B432B8300559675 /* MultipleCollections.storyboard */,
 				2771B0651B0CF25A00F69DFA /* Images.xcassets */,
 				2771B0671B0CF25A00F69DFA /* LaunchScreen.xib */,
 				2771B0581B0CF25A00F69DFA /* Supporting Files */,
@@ -174,12 +192,11 @@
 				2771B0871B0CF3E400F69DFA /* Protocols */,
 				2771B0851B0CF3AA00F69DFA /* Abstract View Controllers */,
 				2771B0861B0CF3C800F69DFA /* Abstract Containers */,
+				2774ADAF1B432CBE00559675 /* Data Collection */,
+				2774ADB01B432CDA00559675 /* Direction Collections */,
+				2774ADB11B432CEC00559675 /* Multiple Collections */,
 				2771B09B1B0CF75C00F69DFA /* MLMenuTableViewController.h */,
 				2771B09C1B0CF75C00F69DFA /* MLMenuTableViewController.m */,
-				273295241B0D1808000FC492 /* MLDataCollectionViewController.h */,
-				273295251B0D1808000FC492 /* MLDataCollectionViewController.m */,
-				27694F751B0E4DC60034551B /* MLSettingsTableViewController.h */,
-				27694F761B0E4DC60034551B /* MLSettingsTableViewController.m */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -236,6 +253,39 @@
 				2771B09F1B0CFE4E00F69DFA /* MLReorderableCollection.m */,
 			);
 			path = Models;
+			sourceTree = "<group>";
+		};
+		2774ADAF1B432CBE00559675 /* Data Collection */ = {
+			isa = PBXGroup;
+			children = (
+				2774ADBB1B43312100559675 /* MLColorsCollectionViewController.h */,
+				2774ADBC1B43312100559675 /* MLColorsCollectionViewController.m */,
+				273295241B0D1808000FC492 /* MLDataCollectionViewController.h */,
+				273295251B0D1808000FC492 /* MLDataCollectionViewController.m */,
+				27694F751B0E4DC60034551B /* MLSettingsTableViewController.h */,
+				27694F761B0E4DC60034551B /* MLSettingsTableViewController.m */,
+			);
+			name = "Data Collection";
+			sourceTree = "<group>";
+		};
+		2774ADB01B432CDA00559675 /* Direction Collections */ = {
+			isa = PBXGroup;
+			children = (
+				2774ADB21B432D6400559675 /* MLDirectionContainerViewController.h */,
+				2774ADB31B432D6400559675 /* MLDirectionContainerViewController.m */,
+				2774ADB81B432F9D00559675 /* MLDirectionCollectionViewController.h */,
+				2774ADB91B432F9D00559675 /* MLDirectionCollectionViewController.m */,
+			);
+			name = "Direction Collections";
+			sourceTree = "<group>";
+		};
+		2774ADB11B432CEC00559675 /* Multiple Collections */ = {
+			isa = PBXGroup;
+			children = (
+				2774ADB51B432D8300559675 /* MLMultipleContainerViewController.h */,
+				2774ADB61B432D8300559675 /* MLMultipleContainerViewController.m */,
+			);
+			name = "Multiple Collections";
 			sourceTree = "<group>";
 		};
 		279722221B1E0AAF00576D1A /* TableView Cells */ = {
@@ -368,6 +418,8 @@
 			files = (
 				2771B0641B0CF25A00F69DFA /* Main.storyboard in Resources */,
 				2771B0691B0CF25A00F69DFA /* LaunchScreen.xib in Resources */,
+				2774ADAE1B432B8300559675 /* MultipleCollections.storyboard in Resources */,
+				2774ADAC1B432B7200559675 /* DirectionCollections.storyboard in Resources */,
 				2771B0661B0CF25A00F69DFA /* Images.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -421,6 +473,8 @@
 			files = (
 				2771B0931B0CF50F00F69DFA /* MLNavigationController.m in Sources */,
 				2771B09D1B0CF75C00F69DFA /* MLMenuTableViewController.m in Sources */,
+				2774ADB41B432D6400559675 /* MLDirectionContainerViewController.m in Sources */,
+				2774ADBD1B43312100559675 /* MLColorsCollectionViewController.m in Sources */,
 				27DDA9AD1B41CC58001BCAC3 /* MLTableViewController.m in Sources */,
 				273295261B0D1808000FC492 /* MLDataCollectionViewController.m in Sources */,
 				2771B0841B0CF29400F69DFA /* MLViewController.m in Sources */,
@@ -435,6 +489,8 @@
 				273295231B0D1702000FC492 /* MLReorderableCollection.m in Sources */,
 				2771B0961B0CF52A00F69DFA /* MLCollectionViewCell.m in Sources */,
 				2771B0991B0CF53600F69DFA /* MLTableViewCell.m in Sources */,
+				2774ADBA1B432F9D00559675 /* MLDirectionCollectionViewController.m in Sources */,
+				2774ADB71B432D8300559675 /* MLMultipleContainerViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

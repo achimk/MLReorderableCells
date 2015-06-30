@@ -6,9 +6,9 @@
 //  Copyright (c) 2015 Joachim Kret. All rights reserved.
 //
 
-#import "MLCollectionViewController.h"
+#import "MLColorsCollectionViewController.h"
 
-@interface MLDataCollectionViewController : MLCollectionViewController
+@interface MLDataCollectionViewController : MLColorsCollectionViewController
 
 @property (nonatomic, readwrite, assign) BOOL useMainContainer;
 @property (nonatomic, readwrite, assign) BOOL canReorderItems;

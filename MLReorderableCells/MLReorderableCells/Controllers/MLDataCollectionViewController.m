@@ -8,10 +8,7 @@
 
 #import "MLDataCollectionViewController.h"
 #import "MLFlowLayout.h"
-#import "MLColorCollectionViewCell.h"
-#import "MLColorModel.h"
 #import "MLReorderableCollection.h"
-#import <RZCollectionList/RZCollectionList.h>
 #import "MLSettingsTableViewController.h"
 
 #define NUMBER_OF_INITIAL_ITEMS     9
@@ -20,7 +17,6 @@
 
 @interface MLDataCollectionViewController () <MLReorderableCollectionDelegate, MLReorderableCollectionDataSource>
 
-@property (nonatomic, readwrite, strong) RZArrayCollectionList * resultsController;
 @property (nonatomic, readwrite, strong) MLReorderableCollection * reorderableCollection;
 @property (nonatomic, readwrite, strong) id cachedObject;
 
@@ -46,12 +42,7 @@
     self.canReplaceItems = YES;
     self.canMoveItems = NO;
 
-    self.resultsController = [[RZArrayCollectionList alloc] initWithArray:@[] sectionNameKeyPath:nil];
     self.reorderableCollection = [[MLReorderableCollection alloc] initWithCollectionView:self.collectionView];
-    
-    self.collectionView.backgroundColor = [UIColor whiteColor];
-    [MLColorCollectionViewCell registerCellWithCollectionView:self.collectionView];
-    
     
     UIBarButtonItem * addItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(addAction:)];
     UIBarButtonItem * clearItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemTrash target:self action:@selector(clearAction:)];
@@ -69,26 +60,6 @@
 }
 
 #pragma mark Actions
-
-- (IBAction)addAction:(id)sender {
-    MLColorModel * model = [MLColorModel model];
-    [self.resultsController addObject:model toSection:0];
-    [self reloadData];
-}
-
-- (IBAction)clearAction:(id)sender {
-    [self.resultsController removeAllObjects];
-    [self reloadData];
-}
-
-- (IBAction)randomAction:(id)sender {
-    [self.resultsController removeAllObjects];
-    for (NSUInteger i = 0; i < NUMBER_OF_INITIAL_ITEMS; i++) {
-        MLColorModel * model = [MLColorModel model];
-        [self.resultsController addObject:model toSection:0];
-    }
-    [self reloadData];
-}
 
 - (IBAction)settingsAction:(id)sender {
     MLSettingsTableViewController * settingsViewController = [[MLSettingsTableViewController alloc] initWithCollectionViewController:self];
@@ -183,29 +154,6 @@
 
 - (void)collectionView:(UICollectionView *)collectionView itemAtIndexPath:(NSIndexPath *)fromIndexPath didMoveToIndexPath:(NSIndexPath *)toIndexPath {
     [self.resultsController moveObjectAtIndexPath:fromIndexPath toIndexPath:toIndexPath];
-}
-
-#pragma mark UICollectionViewDelegate
-
-- (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
-}
-
-#pragma mark UICollectionViewDataSource
-
-- (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
-    MLColorCollectionViewCell * cell = [MLColorCollectionViewCell cellForCollectionView:collectionView indexPath:indexPath];
-    id object = [self.resultsController objectAtIndexPath:indexPath];
-    [cell configureWithObject:object context:indexPath];
-    return cell;
-}
-
-- (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView {
-    return [self.resultsController.sections count];
-}
-
-- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
-    id <RZCollectionListSectionInfo> sectionInfo = [self.resultsController.sections objectAtIndex:section];
-    return [sectionInfo numberOfObjects];
 }
 
 @end
