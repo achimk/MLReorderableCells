@@ -13,6 +13,8 @@
 @interface MLColorsCollectionViewController : MLCollectionViewController
 
 @property (nonatomic, readonly, strong) RZArrayCollectionList * resultsController;
+@property (nonatomic, readonly, assign, getter=isVerticalLayout) BOOL verticalLayout;
+@property (nonatomic, readonly, assign, getter=isHorizontalLayout) BOOL horizontalLayout;
 
 - (IBAction)addAction:(id)sender;
 - (IBAction)clearAction:(id)sender;

@@ -80,6 +80,7 @@
 }
 
 - (void)collectionView:(UICollectionView *)collectionView didEndDraggingItemAtIndexPath:(NSIndexPath *)indexPath {
+    self.cachedObject = nil;
 }
 
 #pragma mark - MLReorderableCollectionDataSource

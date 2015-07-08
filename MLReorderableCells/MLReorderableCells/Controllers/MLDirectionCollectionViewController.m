@@ -8,6 +8,8 @@
 
 #import "MLDirectionCollectionViewController.h"
 
+#define NUMBER_OF_INITIAL_ITEMS     3
+
 #pragma mark - MLDirectionCollectionViewController
 
 @interface MLDirectionCollectionViewController ()
@@ -29,20 +31,8 @@
     [super viewWillAppear:animated];
     
     if (self.appearsFirstTime) {
-        [self randomAction:nil];
+        [self randomAction:@(NUMBER_OF_INITIAL_ITEMS)];
     }
-}
-
-#pragma mark Accessors
-
-- (BOOL)isVertical {
-    UICollectionViewFlowLayout * flowLayout = (id)self.collectionViewLayout;
-    return (UICollectionViewScrollDirectionVertical == flowLayout.scrollDirection);
-}
-
-- (BOOL)isHorizontal {
-    UICollectionViewFlowLayout * flowLayout = (id)self.collectionViewLayout;
-    return (UICollectionViewScrollDirectionHorizontal == flowLayout.scrollDirection);
 }
 
 @end

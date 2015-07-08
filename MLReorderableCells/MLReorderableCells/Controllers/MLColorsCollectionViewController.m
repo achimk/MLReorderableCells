@@ -23,6 +23,8 @@
 
 @implementation MLColorsCollectionViewController
 
+@dynamic verticalLayout, horizontalLayout;
+
 #pragma mark View
 
 - (void)viewDidLoad {
@@ -32,6 +34,26 @@
     
     self.collectionView.backgroundColor = [UIColor whiteColor];
     [MLColorCollectionViewCell registerCellWithCollectionView:self.collectionView];
+}
+
+#pragma mark Accessors
+
+- (BOOL)isVerticalLayout {
+    if (![self.collectionViewLayout isKindOfClass:[UICollectionViewFlowLayout class]]) {
+        return NO;
+    }
+    
+    UICollectionViewFlowLayout * flowLayout = (id)self.collectionViewLayout;
+    return (UICollectionViewScrollDirectionVertical == flowLayout.scrollDirection);
+}
+
+- (BOOL)isHorizontalLayout {
+    if (![self.collectionViewLayout isKindOfClass:[UICollectionViewFlowLayout class]]) {
+        return NO;
+    }
+    
+    UICollectionViewFlowLayout * flowLayout = (id)self.collectionViewLayout;
+    return (UICollectionViewScrollDirectionHorizontal == flowLayout.scrollDirection);
 }
 
 #pragma mark Actions
@@ -48,17 +70,26 @@
 }
 
 - (IBAction)randomAction:(id)sender {
+    NSUInteger numberOfItems = NUMBER_OF_INITIAL_ITEMS;
+    
+    if ([sender isKindOfClass:[NSNumber class]]) {
+        numberOfItems = [sender unsignedIntegerValue];
+    }
+    
     [self.resultsController removeAllObjects];
-    for (NSUInteger i = 0; i < NUMBER_OF_INITIAL_ITEMS; i++) {
+    
+    for (NSUInteger i = 0; i < numberOfItems; i++) {
         MLColorModel * model = [MLColorModel model];
         [self.resultsController addObject:model toSection:0];
     }
+    
     [self reloadData];
 }
 
 #pragma mark UICollectionViewDelegate
 
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
+    NSLog(@"-> %@: %@", NSStringFromClass([self class]), NSStringFromSelector(_cmd));
 }
 
 #pragma mark UICollectionViewDataSource

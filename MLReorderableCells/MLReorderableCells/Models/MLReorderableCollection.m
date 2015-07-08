@@ -7,35 +7,9 @@
 //
 
 #import "MLReorderableCollection.h"
-
-typedef NS_ENUM(NSUInteger, MLScrollDirection) {
-    MLScrollDirectionNone,
-    MLScrollDirectionUp,
-    MLScrollDirectionDown,
-    MLScrollDirectionLeft,
-    MLScrollDirectionRight
-};
+#import "MLReorderableCollection+Private.h"
 
 #pragma mark - MLReorderableCollection
-
-@interface MLReorderableCollection ()
-
-@property (nonatomic, readonly, strong) UIView * cellFakeView;
-@property (nonatomic, readonly, strong) CADisplayLink * displayLink;
-@property (nonatomic, readonly, strong) NSIndexPath * reorderingCellIndexPath;
-@property (nonatomic, readonly, assign) CGPoint reorderingCellCenter;
-@property (nonatomic, readonly, assign) CGPoint cellFakeViewCenter;
-@property (nonatomic, readonly, assign) CGPoint panTranslation;
-@property (nonatomic, readonly, assign) UIEdgeInsets scrollTrigerEdgeInsets;
-@property (nonatomic, readonly, assign) UIEdgeInsets scrollTrigerPadding;
-@property (nonatomic, readonly, assign) MLScrollDirection scrollDirection;
-
-@property (nonatomic, readwrite, assign) BOOL insideCollectionFrame;
-@property (nonatomic, readwrite, strong) UIView * reorderableCollectionContainer;
-
-@end
-
-#pragma mark -
 
 @implementation MLReorderableCollection
 
@@ -62,7 +36,12 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
         _scrollTrigerEdgeInsets = UIEdgeInsetsMake(50.0f, 50.0f, 50.0f, 50.0f);
         _scrollTrigerPadding = UIEdgeInsetsMake(0.0f, 0.0f, 0.0f, 0.0f);
         
-        [self setupCollectionViewGestures];
+        _longPressGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPressGesture:)];
+        _longPressGesture.delegate = self;
+        _panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePanGesture:)];
+        _panGesture.delegate = self;
+        
+        [self addGesturesForCollectionView:collectionView];
     }
     
     return self;
@@ -592,20 +571,27 @@ typedef NS_ENUM(NSUInteger, MLScrollDirection) {
     return collectionContainer;
 }
 
-- (void)setupCollectionViewGestures {
-    _longPressGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPressGesture:)];
-    _panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePanGesture:)];
-    _longPressGesture.delegate = self;
-    _panGesture.delegate = self;
+- (void)addGesturesForCollectionView:(UICollectionView *)collectionView {
+    NSParameterAssert(collectionView);
+    UIGestureRecognizer * longPressGesture = self.longPressGesture;
+    UIGestureRecognizer * panGesture = self.panGesture;
     
-    for (UIGestureRecognizer * gestureRecognizer in self.collectionView.gestureRecognizers) {
+    for (UIGestureRecognizer * gestureRecognizer in collectionView.gestureRecognizers) {
         if ([gestureRecognizer isKindOfClass:[UILongPressGestureRecognizer class]]) {
-            [gestureRecognizer requireGestureRecognizerToFail:_longPressGesture];
+            [gestureRecognizer requireGestureRecognizerToFail:longPressGesture];
         }
     }
     
-    [self.collectionView addGestureRecognizer:_longPressGesture];
-    [self.collectionView addGestureRecognizer:_panGesture];
+    [collectionView addGestureRecognizer:longPressGesture];
+    [collectionView addGestureRecognizer:panGesture];
+}
+
+- (void)removeGesturesForCollectionView:(UICollectionView *)collectionView {
+    NSParameterAssert(collectionView);
+    UIGestureRecognizer * longPressGesture = self.longPressGesture;
+    UIGestureRecognizer * panGesture = self.panGesture;
+    [collectionView removeGestureRecognizer:longPressGesture];
+    [collectionView removeGestureRecognizer:panGesture];
 }
 
 - (void)setupDisplayLink {

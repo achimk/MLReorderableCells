@@ -31,6 +31,8 @@
 		2774ADB71B432D8300559675 /* MLMultipleContainerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2774ADB61B432D8300559675 /* MLMultipleContainerViewController.m */; };
 		2774ADBA1B432F9D00559675 /* MLDirectionCollectionViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2774ADB91B432F9D00559675 /* MLDirectionCollectionViewController.m */; };
 		2774ADBD1B43312100559675 /* MLColorsCollectionViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2774ADBC1B43312100559675 /* MLColorsCollectionViewController.m */; };
+		2789BCC11B4DA55F00EC126A /* MLReorderableCollections.m in Sources */ = {isa = PBXBuildFile; fileRef = 2789BCC01B4DA55F00EC126A /* MLReorderableCollections.m */; };
+		2789BCC41B4DC79100EC126A /* MLReorderableCollectionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2789BCC31B4DC79100EC126A /* MLReorderableCollectionController.m */; };
 		27DDA9AC1B41CC58001BCAC3 /* MLCollectionViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 27DDA9A91B41CC58001BCAC3 /* MLCollectionViewController.m */; };
 		27DDA9AD1B41CC58001BCAC3 /* MLTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 27DDA9AB1B41CC58001BCAC3 /* MLTableViewController.m */; };
 		92A8176624C5E7630DE75192 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 889E3F8B2B62F422573A4C21 /* libPods.a */; };
@@ -94,6 +96,11 @@
 		2774ADB91B432F9D00559675 /* MLDirectionCollectionViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MLDirectionCollectionViewController.m; sourceTree = "<group>"; };
 		2774ADBB1B43312100559675 /* MLColorsCollectionViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MLColorsCollectionViewController.h; sourceTree = "<group>"; };
 		2774ADBC1B43312100559675 /* MLColorsCollectionViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MLColorsCollectionViewController.m; sourceTree = "<group>"; };
+		2789BCBF1B4DA55F00EC126A /* MLReorderableCollections.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MLReorderableCollections.h; sourceTree = "<group>"; };
+		2789BCC01B4DA55F00EC126A /* MLReorderableCollections.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MLReorderableCollections.m; sourceTree = "<group>"; };
+		2789BCC21B4DC79100EC126A /* MLReorderableCollectionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MLReorderableCollectionController.h; sourceTree = "<group>"; };
+		2789BCC31B4DC79100EC126A /* MLReorderableCollectionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MLReorderableCollectionController.m; sourceTree = "<group>"; };
+		27C60D261B4C50620000D845 /* MLReorderableCollection+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MLReorderableCollection+Private.h"; sourceTree = "<group>"; };
 		27DDA9A81B41CC58001BCAC3 /* MLCollectionViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MLCollectionViewController.h; sourceTree = "<group>"; };
 		27DDA9A91B41CC58001BCAC3 /* MLCollectionViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MLCollectionViewController.m; sourceTree = "<group>"; };
 		27DDA9AA1B41CC58001BCAC3 /* MLTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MLTableViewController.h; sourceTree = "<group>"; };
@@ -249,8 +256,13 @@
 			children = (
 				273295271B0D18AB000FC492 /* MLColorModel.h */,
 				273295281B0D18AB000FC492 /* MLColorModel.m */,
+				27C60D261B4C50620000D845 /* MLReorderableCollection+Private.h */,
 				2771B09E1B0CFE4E00F69DFA /* MLReorderableCollection.h */,
 				2771B09F1B0CFE4E00F69DFA /* MLReorderableCollection.m */,
+				2789BCBF1B4DA55F00EC126A /* MLReorderableCollections.h */,
+				2789BCC01B4DA55F00EC126A /* MLReorderableCollections.m */,
+				2789BCC21B4DC79100EC126A /* MLReorderableCollectionController.h */,
+				2789BCC31B4DC79100EC126A /* MLReorderableCollectionController.m */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -479,7 +491,9 @@
 				273295261B0D1808000FC492 /* MLDataCollectionViewController.m in Sources */,
 				2771B0841B0CF29400F69DFA /* MLViewController.m in Sources */,
 				273295291B0D18AB000FC492 /* MLColorModel.m in Sources */,
+				2789BCC41B4DC79100EC126A /* MLReorderableCollectionController.m in Sources */,
 				2732952C1B0D1A38000FC492 /* MLColorCollectionViewCell.m in Sources */,
+				2789BCC11B4DA55F00EC126A /* MLReorderableCollections.m in Sources */,
 				27DDA9AC1B41CC58001BCAC3 /* MLCollectionViewController.m in Sources */,
 				2771B05E1B0CF25A00F69DFA /* AppDelegate.m in Sources */,
 				2771B05B1B0CF25A00F69DFA /* main.m in Sources */,
