@@ -111,10 +111,12 @@
 
 - (void)handleLongPressGesture:(UILongPressGestureRecognizer *)gestureRecognizer {
 #warning Implement!
+    NSLog(@"-> long press");
 }
 
 - (void)handlePanGesture:(UIPanGestureRecognizer *)gestureRecognizer {
 #warning Implement!
+    NSLog(@"-> pan");
 }
 
 #pragma mark UIGestureRecognizerDelegate
@@ -151,7 +153,32 @@
 }
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
-#warning Implement!
+    if ([self.panGesture isEqual:gestureRecognizer]) {
+        if (UIGestureRecognizerStatePossible != self.longPressGesture.state &&
+            UIGestureRecognizerStateFailed != self.longPressGesture.state) {
+            if ([self.longPressGesture isEqual:otherGestureRecognizer]) {
+                return YES;
+            }
+            
+            return NO;
+        }
+    }
+    else if ([self.longPressGesture isEqual:gestureRecognizer]) {
+        if ([self.panGesture isEqual:otherGestureRecognizer]) {
+            return YES;
+        }
+    }
+    else if ([gestureRecognizer.view isKindOfClass:[UICollectionView class]]) {
+        UICollectionView * collectionView = (UICollectionView *)gestureRecognizer.view;
+        
+        if ([collectionView.panGestureRecognizer isEqual:gestureRecognizer]) {
+            if (UIGestureRecognizerStatePossible == self.longPressGesture.state ||
+                UIGestureRecognizerStateFailed == self.longPressGesture.state) {
+                return NO;
+            }
+        }
+    }
+    
     return YES;
 }
 

@@ -8,15 +8,17 @@
 
 #import "MLDirectionContainerViewController.h"
 #import "MLDirectionCollectionViewController.h"
-#import "MLReorderableCollections.h"
+//#import "MLReorderableCollections.h"
+#import "MLReorderableCollectionController.h"
 
 #pragma mark - MLDirectionContainerViewController
 
-@interface MLDirectionContainerViewController () <MLReorderableCollectionDelegate, MLReorderableCollectionDataSource>
+@interface MLDirectionContainerViewController () <MLReorderableCollectionControllerDelegate, MLReorderableCollectionControllerDataSource>//<MLReorderableCollectionDelegate, MLReorderableCollectionDataSource>
 
 @property (nonatomic, readwrite, strong) MLDirectionCollectionViewController * verticalCollectionViewController;
 @property (nonatomic, readwrite, strong) MLDirectionCollectionViewController * horizontalCollectionViewController;
-@property (nonatomic, readwrite, strong) MLReorderableCollections * reorderableCollections;
+//@property (nonatomic, readwrite, strong) MLReorderableCollections * reorderableCollections;
+@property (nonatomic, readwrite, strong) MLReorderableCollectionController * reorderableController;
 @property (nonatomic, readwrite, strong) id cachedObject;
 
 @end
@@ -30,16 +32,24 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    self.reorderableCollections = [[MLReorderableCollections alloc] initWithContainerView:self.view];
+//    self.reorderableCollections = [[MLReorderableCollections alloc] initWithContainerView:self.view];
+//    
+//    MLReorderableCollection * reorderableCollection = nil;
+//    reorderableCollection = [self.reorderableCollections addCollectionView:self.verticalCollectionViewController.collectionView];
+//    reorderableCollection.delegate = self;
+//    reorderableCollection.dataSource = self;
+//    
+//    reorderableCollection = [self.reorderableCollections addCollectionView:self.horizontalCollectionViewController.collectionView];
+//    reorderableCollection.delegate = self;
+//    reorderableCollection.dataSource = self;
     
-    MLReorderableCollection * reorderableCollection = nil;
-    reorderableCollection = [self.reorderableCollections addCollectionView:self.verticalCollectionViewController.collectionView];
-    reorderableCollection.delegate = self;
-    reorderableCollection.dataSource = self;
+    self.reorderableController = [[MLReorderableCollectionController alloc] initWithViewContainer:self.view];
+    self.reorderableController.delegate = self;
+    self.reorderableController.dataSource = self;
+    [self.reorderableController addCollectionView:self.verticalCollectionViewController.collectionView];
+    [self.reorderableController addCollectionView:self.horizontalCollectionViewController.collectionView];
     
-    reorderableCollection = [self.reorderableCollections addCollectionView:self.horizontalCollectionViewController.collectionView];
-    reorderableCollection.delegate = self;
-    reorderableCollection.dataSource = self;
+    
 }
 
 #pragma mark Segues
@@ -55,7 +65,8 @@
     }
 }
 
-#pragma mark MLReorderableCollectionDelegate
+//#pragma mark MLReorderableCollectionDelegate
+#pragma mark MLReorderableCollectionControllerDelegate
 
 - (void)collectionView:(UICollectionView *)collectionView willBeginDraggingItemAtIndexPath:(NSIndexPath *)indexPath {
 //    NSLog(@"-> %@: %@", NSStringFromClass([self class]), NSStringFromSelector(_cmd));
@@ -74,8 +85,8 @@
     self.cachedObject = nil;
 }
 
-#pragma mark - MLReorderableCollectionDataSource
-
+//#pragma mark MLReorderableCollectionDataSource
+#pragma mark MLReorderableCollectionControllerDataSource
 #pragma mark Reorder
 
 - (BOOL)collectionView:(UICollectionView *)collectionView canReorderItemAtIndexPath:(NSIndexPath *)indexPath {
