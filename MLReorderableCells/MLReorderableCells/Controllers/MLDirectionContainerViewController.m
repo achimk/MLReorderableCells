@@ -93,19 +93,28 @@
     return YES;
 }
 
-- (UIView *)reorderableCollectionContainerForCollectionView:(UICollectionView *)collectionView {
-    return self.splitViewController.view;
-}
+//- (UIView *)reorderableCollectionContainerForCollectionView:(UICollectionView *)collectionView {
+//    return self.splitViewController.view;
+//}
 
 - (NSIndexPath *)indexPathForNewItemInCollectionView:(UICollectionView *)collectionView {
+    BOOL isCurrenCollectionView = (self.reorderableController.currentCollectionView == collectionView);
     RZArrayCollectionList * resultsController = [self resultsControllerForCollectionView:collectionView];
-    return (0 == resultsController.listObjects.count) ? [NSIndexPath indexPathForRow:0 inSection:0] : nil;
+    
+    if (isCurrenCollectionView) {
+        return (0 == resultsController.listObjects.count) ? [NSIndexPath indexPathForRow:0 inSection:0] : nil;
+    }
+    
+#warning Check implementation for empty index path!
+    NSUInteger section = 0;
+    id <RZCollectionListSectionInfo> sectionInfo = resultsController.sections[section];
+    return [NSIndexPath indexPathForRow:[sectionInfo numberOfObjects] inSection:section];
 }
 
 #pragma mark Insert
 
 - (BOOL)collectionView:(UICollectionView *)collectionView canInsertItemAtIndexPath:(NSIndexPath *)indexPath {
-    NSLog(@"-> can insert: %@", [self nameForCollectionView:collectionView]);
+//    NSLog(@"-> can insert: %@", [self nameForCollectionView:collectionView]);
     return YES;
 }
 
@@ -121,7 +130,7 @@
 #pragma mark Delete
 
 - (BOOL)collectionView:(UICollectionView *)collectionView canDeleteItemAtIndexPath:(NSIndexPath *)indexPath {
-    NSLog(@"-> can delete: %@", [self nameForCollectionView:collectionView]);
+//    NSLog(@"-> can delete: %@", [self nameForCollectionView:collectionView]);
     return YES;
 }
 
@@ -165,6 +174,18 @@
     RZArrayCollectionList * resultsController = [self resultsControllerForCollectionView:collectionView];
     [resultsController moveObjectAtIndexPath:fromIndexPath toIndexPath:toIndexPath];
 }
+
+#pragma mark Transfer
+
+- (BOOL)collectionView:(UICollectionView *)collectionView itemAtIndexPath:(NSIndexPath *)indexPath canTransferToCollectionView:(UICollectionView *)toCollectionView indexPath:(NSIndexPath *)toIndexPath {
+    return YES;
+}
+
+//- (void)collectionView:(UICollectionView *)collectionView itemAtIndexPath:(NSIndexPath *)indexPath willTransferToCollectionView:(UICollectionView *)toCollectionView indexPath:(NSIndexPath *)toIndexPath {
+//}
+//
+//- (void)collectionView:(UICollectionView *)collectionView itemAtIndexPath:(NSIndexPath *)indexPath didTransferToCollectionView:(UICollectionView *)toCollectionView indexPath:(NSIndexPath *)toIndexPath {
+//}
 
 #pragma mark Private Methods
 

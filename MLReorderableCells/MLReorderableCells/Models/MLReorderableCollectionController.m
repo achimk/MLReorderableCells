@@ -263,31 +263,46 @@
     switch (gestureRecognizer.state) {
         case UIGestureRecognizerStateChanged: {
             UICollectionView * collectionView = [self collectionViewForGesture:gestureRecognizer];
+            BOOL shouldUpdateInside = NO;
+            BOOL shouldUpdateCollectionView = NO;
             BOOL isInside = (nil != collectionView);
             BOOL hasChanged = (isInside != self.isInside);
             BOOL hasCollectionViewChanged = (isInside && self.currentCollectionView != collectionView);
-            self.inside = isInside;
             
             CGPoint point = [gestureRecognizer locationInView:self.viewContainer];
             UIView * viewPlaceholder = self.viewPlaceholder;
             viewPlaceholder.center = point;
 
             if (hasCollectionViewChanged) {
-                NSLog(@"-> change collection view");
-                UICollectionView * fromCollectionView = self.currentCollectionView;
-                [self transferItemFromCollectionView:fromCollectionView toCollectionView:collectionView];
+                if (self.currentIndexPath) {
+                    NSLog(@"-> change collection view");
+                    UICollectionView * fromCollectionView = self.currentCollectionView;
+                    [self transferItemFromCollectionView:fromCollectionView toCollectionView:collectionView];
+                }
+                else {
+                    NSLog(@"-> inside new collection view");
+                    shouldUpdateInside = shouldUpdateCollectionView = [self insertItemToCollectionView:collectionView];
+                }
             }
             else if (isInside && hasChanged) {
                 NSLog(@"-> inside");
-                [self insertItemToCollectionView:collectionView];
+                shouldUpdateInside = [self insertItemToCollectionView:collectionView];
             }
             else if (!isInside && hasChanged){
                 NSLog(@"-> outside");
-                [self deleteItemFromCollectionView:collectionView];
+                shouldUpdateInside = [self deleteItemFromCollectionView:self.currentCollectionView];
             }
             else if (isInside) {
                 NSLog(@"-> replace/move");
                 [self replaceOrMoveItemInCollectionView:collectionView];
+            }
+            
+            if (shouldUpdateInside) {
+                self.inside = isInside;
+            }
+            
+            if (shouldUpdateCollectionView) {
+                self.currentCollectionView = collectionView;
             }
             
         } break;
@@ -483,13 +498,18 @@
     }
     
     [self collectionView:fromCollectionView itemAtIndexPath:fromIndexPath willTransferToCollectionView:toCollectionView indexPath:toIndexPath];
+    [self collectionView:fromCollectionView willDeleteItemAtIndexPath:fromIndexPath];
     [fromCollectionView performBatchUpdates:^{
         [fromCollectionView deleteItemsAtIndexPaths:@[fromIndexPath]];
+        [self collectionView:fromCollectionView didDeleteItemAtIndexPath:fromIndexPath];
     } completion:nil];
+    
+    [self collectionView:toCollectionView willInsertItemAtIndexPath:toIndexPath];
     [toCollectionView performBatchUpdates:^{
         self.currentIndexPath = toIndexPath;
         self.currentCollectionView = toCollectionView;
         [toCollectionView insertItemsAtIndexPaths:@[toIndexPath]];
+        [self collectionView:toCollectionView didInsertItemAtIndexPath:toIndexPath];
         [self collectionView:fromCollectionView itemAtIndexPath:fromIndexPath didTransferToCollectionView:toCollectionView indexPath:toIndexPath];
     } completion:^(BOOL finished) {
         UIView * viewPlaceholder = self.viewPlaceholder;
@@ -539,7 +559,6 @@
 
 - (void)animateLongPressEndForCollectionView:(UICollectionView *)collectionView indexPath:(NSIndexPath *)indexPath placeholder:(UIView *)viewPlaceholder completion:(void(^)(BOOL))completion {
     NSParameterAssert(collectionView);
-    NSParameterAssert(indexPath);
     NSParameterAssert(viewPlaceholder);
     CGRect frame = CGRectZero;
 
@@ -568,11 +587,11 @@
 }
 
 - (void)animateTransferFromCollectionView:(UICollectionView *)fromCollectionView itemAtIndexPath:(NSIndexPath *)fromIndexPath toCollectionView:(UICollectionView *)toCollectionView indexPath:(NSIndexPath *)toIndexPath placeholder:(UIView *)viewPlaceholder completion:(void(^)(BOOL))completion {
-    NSParameterAssert(fromCollectionView);
-    NSParameterAssert(fromIndexPath);
-    NSParameterAssert(toCollectionView);
-    NSParameterAssert(toIndexPath);
-    NSParameterAssert(viewPlaceholder);
+//    NSParameterAssert(fromCollectionView);
+//    NSParameterAssert(fromIndexPath);
+//    NSParameterAssert(toCollectionView);
+//    NSParameterAssert(toIndexPath);
+//    NSParameterAssert(viewPlaceholder);
     
 #warning Implement!
 }
@@ -681,7 +700,6 @@
 
 - (void)collectionView:(UICollectionView *)collectionView willEndDraggingItemAtIndexPath:(NSIndexPath *)indexPath {
     NSParameterAssert(collectionView);
-    NSParameterAssert(indexPath);
     if ([self.delegate respondsToSelector:@selector(collectionView:willEndDraggingItemAtIndexPath:)]) {
         [self.delegate collectionView:collectionView willEndDraggingItemAtIndexPath:indexPath];
     }
@@ -689,7 +707,6 @@
 
 - (void)collectionView:(UICollectionView *)collectionView didEndDraggingItemAtIndexPath:(NSIndexPath *)indexPath {
     NSParameterAssert(collectionView);
-    NSParameterAssert(indexPath);
     if ([self.delegate respondsToSelector:@selector(collectionView:didEndDraggingItemAtIndexPath:)]) {
         [self.delegate collectionView:collectionView didEndDraggingItemAtIndexPath:indexPath];
     }
@@ -724,6 +741,7 @@
         indexPath = [self.dataSource indexPathForNewItemInCollectionView:collectionView];
     }
     
+#warning Should we always return a valid index path (non-nil)?
     return indexPath;
 }
 
