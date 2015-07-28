@@ -56,6 +56,17 @@
 - (void)collectionView:(UICollectionView *)collectionView itemAtIndexPath:(NSIndexPath *)indexPath willTransferToCollectionView:(UICollectionView *)toCollectionView indexPath:(NSIndexPath *)toIndexPath;
 - (void)collectionView:(UICollectionView *)collectionView itemAtIndexPath:(NSIndexPath *)indexPath didTransferToCollectionView:(UICollectionView *)toCollectionView indexPath:(NSIndexPath *)toIndexPath;
 
+// Copy data source
+- (BOOL)collectionView:(UICollectionView *)collectionView itemAtIndexPath:(NSIndexPath *)indexPath canCopyToCollectionView:(UICollectionView *)toCollectionView indexPath:(NSIndexPath *)toIndexPath;
+- (void)collectionView:(UICollectionView *)collectionView itemAtIndexPath:(NSIndexPath *)indexPath willCopyToCollectionView:(UICollectionView *)toCollectionView indexPath:(NSIndexPath *)toIndexPath;
+- (void)collectionView:(UICollectionView *)collectionView itemAtIndexPath:(NSIndexPath *)indexPath didCopyToCollectionView:(UICollectionView *)toCollectionView indexPath:(NSIndexPath *)toIndexPath;
+
+// Replace data source
+- (BOOL)collectionView:(UICollectionView *)collectionView itemAtIndexPath:(NSIndexPath *)indexPath canReplaceWithCollectionView:(UICollectionView *)toCollectionView indexPath:(NSIndexPath *)toIndexPath;
+- (void)collectionView:(UICollectionView *)collectionView itemAtIndexPath:(NSIndexPath *)indexPath willReplaceWithCollectionView:(UICollectionView *)toCollectionView indexPath:(NSIndexPath *)toIndexPath;
+- (void)collectionView:(UICollectionView *)collectionView itemAtIndexPath:(NSIndexPath *)indexPath didReplaceWithCollectionView:(UICollectionView *)toCollectionView indexPath:(NSIndexPath *)toIndexPath;
+
+
 @end
 
 #pragma mark - MLReorderableCollectionController
@@ -64,6 +75,7 @@
 
 @property (nonatomic, readonly, strong) NSMutableArray * arrayOfCollectionViews;
 @property (nonatomic, readwrite, assign, getter=isInside) BOOL inside;
+@property (nonatomic, readwrite, assign, getter=isItemCopied) BOOL itemCopied;
 @property (nonatomic, readwrite, strong) UIView * viewPlaceholder;
 @property (nonatomic, readwrite, strong) NSIndexPath * currentIndexPath;
 @property (nonatomic, readwrite, strong) UICollectionView * currentCollectionView;
@@ -236,6 +248,7 @@
             UIView * viewPlaceholder = self.viewPlaceholder;
             
             self.inside = NO;
+            self.itemCopied = NO;
             [self allowsScrollToTop:YES];
             self.viewPlaceholder = nil;
             self.currentIndexPath = nil;
@@ -275,25 +288,20 @@
 
             if (hasCollectionViewChanged) {
                 if (self.currentIndexPath) {
-                    NSLog(@"-> change collection view");
                     UICollectionView * fromCollectionView = self.currentCollectionView;
-                    [self transferItemFromCollectionView:fromCollectionView toCollectionView:collectionView];
+                    [self transferOrCopyOrReplaceFromCollectionView:fromCollectionView toCollectionView:collectionView];
                 }
                 else {
-                    NSLog(@"-> inside new collection view");
                     shouldUpdateInside = shouldUpdateCollectionView = [self insertItemToCollectionView:collectionView];
                 }
             }
             else if (isInside && hasChanged) {
-                NSLog(@"-> inside");
                 shouldUpdateInside = [self insertItemToCollectionView:collectionView];
             }
             else if (!isInside && hasChanged){
-                NSLog(@"-> outside");
                 shouldUpdateInside = [self deleteItemFromCollectionView:self.currentCollectionView];
             }
             else if (isInside) {
-                NSLog(@"-> replace/move");
                 [self replaceOrMoveItemInCollectionView:collectionView];
             }
             
@@ -302,6 +310,7 @@
             }
             
             if (shouldUpdateCollectionView) {
+                NSParameterAssert(collectionView);
                 self.currentCollectionView = collectionView;
             }
             
@@ -380,9 +389,7 @@
 - (BOOL)insertItemToCollectionView:(UICollectionView *)collectionView {
     NSParameterAssert(collectionView);
     NSIndexPath * indexPath = [self indexPathForNewItemInCollectionView:collectionView];
-    if (!indexPath) {
-        return NO;
-    }
+    NSParameterAssert(indexPath);
     
     if (![self collectionView:collectionView canInsertItemAtIndexPath:indexPath]) {
         return NO;
@@ -480,6 +487,18 @@
     return YES;
 }
 
+- (BOOL)transferOrCopyOrReplaceFromCollectionView:(UICollectionView *)fromCollectionView toCollectionView:(UICollectionView *)toCollectionView {
+    if (![self transferItemFromCollectionView:fromCollectionView toCollectionView:toCollectionView]) {
+        if (![self copyItemFromCollectionView:fromCollectionView toCollectionView:toCollectionView]) {
+            if (![self replaceItemFromCollectionView:fromCollectionView withCollectionView:toCollectionView]) {
+                return NO;
+            }
+        }
+    }
+    
+    return YES;
+}
+
 - (BOOL)transferItemFromCollectionView:(UICollectionView *)fromCollectionView toCollectionView:(UICollectionView *)toCollectionView {
     NSParameterAssert(fromCollectionView);
     NSParameterAssert(toCollectionView);
@@ -489,9 +508,7 @@
     }
     
     NSIndexPath * toIndexPath = [self indexPathForNewItemInCollectionView:toCollectionView];
-    if (!toIndexPath) {
-        return NO;
-    }
+    NSParameterAssert(toIndexPath);
     
     if (![self collectionView:fromCollectionView itemAtIndexPath:fromIndexPath canTransferToCollectionView:toCollectionView indexPath:toIndexPath]) {
         return NO;
@@ -499,12 +516,14 @@
     
     [self collectionView:fromCollectionView itemAtIndexPath:fromIndexPath willTransferToCollectionView:toCollectionView indexPath:toIndexPath];
     [self collectionView:fromCollectionView willDeleteItemAtIndexPath:fromIndexPath];
+    
     [fromCollectionView performBatchUpdates:^{
         [fromCollectionView deleteItemsAtIndexPaths:@[fromIndexPath]];
         [self collectionView:fromCollectionView didDeleteItemAtIndexPath:fromIndexPath];
     } completion:nil];
     
     [self collectionView:toCollectionView willInsertItemAtIndexPath:toIndexPath];
+    
     [toCollectionView performBatchUpdates:^{
         self.currentIndexPath = toIndexPath;
         self.currentCollectionView = toCollectionView;
@@ -513,12 +532,100 @@
         [self collectionView:fromCollectionView itemAtIndexPath:fromIndexPath didTransferToCollectionView:toCollectionView indexPath:toIndexPath];
     } completion:^(BOOL finished) {
         UIView * viewPlaceholder = self.viewPlaceholder;
-        [self animateTransferFromCollectionView:fromCollectionView
-                                itemAtIndexPath:fromIndexPath
-                               toCollectionView:toCollectionView
-                                      indexPath:toIndexPath
-                                    placeholder:viewPlaceholder
-                                     completion:nil];
+        [self animateFromCollectionView:fromCollectionView
+                        itemAtIndexPath:fromIndexPath
+                       toCollectionView:toCollectionView
+                              indexPath:toIndexPath
+                            placeholder:viewPlaceholder
+                             completion:nil];
+    }];
+    
+    return YES;
+}
+
+- (BOOL)copyItemFromCollectionView:(UICollectionView *)fromCollectionView toCollectionView:(UICollectionView *)toCollectionView {
+    NSParameterAssert(fromCollectionView);
+    NSParameterAssert(toCollectionView);
+    if (self.isItemCopied) {
+        return NO;
+    }
+    
+    NSIndexPath * fromIndexPath = self.currentIndexPath;
+    if (!fromIndexPath) {
+        return NO;
+    }
+    
+    NSIndexPath * toIndexPath = [self indexPathForNewItemInCollectionView:toCollectionView];
+    NSParameterAssert(toIndexPath);
+    
+    if (![self collectionView:fromCollectionView itemAtIndexPath:fromIndexPath canCopyToCollectionView:toCollectionView indexPath:toIndexPath]) {
+        return NO;
+    }
+    
+    [self collectionView:fromCollectionView itemAtIndexPath:fromIndexPath willCopyToCollectionView:toCollectionView indexPath:toIndexPath];
+    [self collectionView:toCollectionView willInsertItemAtIndexPath:toIndexPath];
+    
+    [toCollectionView performBatchUpdates:^{
+        self.itemCopied = YES;
+        self.currentIndexPath = toIndexPath;
+        self.currentCollectionView = toCollectionView;
+        [toCollectionView insertItemsAtIndexPaths:@[toIndexPath]];
+        [self collectionView:toCollectionView didInsertItemAtIndexPath:toIndexPath];
+        [self collectionView:fromCollectionView itemAtIndexPath:fromIndexPath didCopyToCollectionView:toCollectionView indexPath:toIndexPath];
+    } completion:^(BOOL finished) {
+        UIView * viewPlaceholder = self.viewPlaceholder;
+        [self animateFromCollectionView:fromCollectionView
+                        itemAtIndexPath:fromIndexPath
+                       toCollectionView:toCollectionView
+                              indexPath:toIndexPath
+                            placeholder:viewPlaceholder
+                             completion:nil];
+    }];
+    
+    return YES;
+}
+
+- (BOOL)replaceItemFromCollectionView:(UICollectionView *)fromCollectionView withCollectionView:(UICollectionView *)toCollectionView {
+    NSParameterAssert(fromCollectionView);
+    NSParameterAssert(toCollectionView);
+    NSIndexPath * fromIndexPath = self.currentIndexPath;
+    if (!fromIndexPath) {
+        return NO;
+    }
+    
+    NSIndexPath * toIndexPath = [self indexPathFromViewPlaceholderInCollectionView:toCollectionView];
+    if (!toIndexPath) {
+        return NO;
+    }
+
+    if (![self collectionView:fromCollectionView itemAtIndexPath:fromIndexPath canReplaceWithCollectionView:toCollectionView indexPath:toIndexPath]) {
+        return NO;
+    }
+    
+    [self collectionView:fromCollectionView itemAtIndexPath:fromIndexPath willReplaceWithCollectionView:toCollectionView indexPath:toIndexPath];
+    [self collectionView:fromCollectionView itemAtIndexPath:fromIndexPath willReplaceWithIndexPath:fromIndexPath];
+    
+    [fromCollectionView performBatchUpdates:^{
+        [fromCollectionView reloadItemsAtIndexPaths:@[fromIndexPath]];
+        [self collectionView:fromCollectionView itemAtIndexPath:fromIndexPath didReplaceWithIndexPath:fromIndexPath];
+    } completion:nil];
+    
+    [self collectionView:toCollectionView itemAtIndexPath:toIndexPath willReplaceWithIndexPath:toIndexPath];
+    
+    [toCollectionView performBatchUpdates:^{
+        self.currentIndexPath = toIndexPath;
+        self.currentCollectionView = toCollectionView;
+        [toCollectionView reloadItemsAtIndexPaths:@[toIndexPath]];
+        [self collectionView:toCollectionView itemAtIndexPath:toIndexPath didReplaceWithIndexPath:toIndexPath];
+        [self collectionView:fromCollectionView itemAtIndexPath:fromIndexPath didReplaceWithCollectionView:toCollectionView indexPath:toIndexPath];
+    } completion:^(BOOL finished) {
+        UIView * viewPlaceholder = self.viewPlaceholder;
+        [self animateFromCollectionView:fromCollectionView
+                        itemAtIndexPath:fromIndexPath
+                       toCollectionView:toCollectionView
+                              indexPath:toIndexPath
+                            placeholder:viewPlaceholder
+                             completion:nil];
     }];
     
     return YES;
@@ -586,7 +693,7 @@
     }];
 }
 
-- (void)animateTransferFromCollectionView:(UICollectionView *)fromCollectionView itemAtIndexPath:(NSIndexPath *)fromIndexPath toCollectionView:(UICollectionView *)toCollectionView indexPath:(NSIndexPath *)toIndexPath placeholder:(UIView *)viewPlaceholder completion:(void(^)(BOOL))completion {
+- (void)animateFromCollectionView:(UICollectionView *)fromCollectionView itemAtIndexPath:(NSIndexPath *)fromIndexPath toCollectionView:(UICollectionView *)toCollectionView indexPath:(NSIndexPath *)toIndexPath placeholder:(UIView *)viewPlaceholder completion:(void(^)(BOOL))completion {
 //    NSParameterAssert(fromCollectionView);
 //    NSParameterAssert(fromIndexPath);
 //    NSParameterAssert(toCollectionView);
@@ -674,6 +781,14 @@
     return image;
 }
 
+- (NSIndexPath *)indexPathFromViewPlaceholderInCollectionView:(UICollectionView *)collectionView {
+    NSAssert(self.viewPlaceholder, @"View placeholder should be set when accessing new index path!");
+    NSParameterAssert(collectionView);
+    CGPoint point = [self.viewContainer convertPoint:self.viewPlaceholder.center toView:collectionView];
+    NSIndexPath * indexPath = [collectionView indexPathForItemAtPoint:point];
+    return indexPath;
+}
+
 @end
 
 #pragma mark -
@@ -734,14 +849,17 @@
 - (NSIndexPath *)indexPathForNewItemInCollectionView:(UICollectionView *)collectionView {
     NSAssert(self.viewPlaceholder, @"View placeholder should be set when accessing new index path!");
     NSParameterAssert(collectionView);
-    CGPoint point = [self.viewContainer convertPoint:self.viewPlaceholder.center fromView:collectionView];
+    CGPoint point = [self.viewContainer convertPoint:self.viewPlaceholder.center toView:collectionView];
     NSIndexPath * indexPath = [collectionView indexPathForItemAtPoint:point];
     
     if (!indexPath && [self.dataSource respondsToSelector:@selector(indexPathForNewItemInCollectionView:)]) {
         indexPath = [self.dataSource indexPathForNewItemInCollectionView:collectionView];
     }
     
-#warning Should we always return a valid index path (non-nil)?
+    if (!indexPath) {
+        indexPath = [NSIndexPath indexPathForRow:0 inSection:0];
+    }
+    
     return indexPath;
 }
 
@@ -899,6 +1017,76 @@
     NSParameterAssert(toIndexPath);
     if ([self.dataSource respondsToSelector:@selector(collectionView:itemAtIndexPath:didTransferToCollectionView:indexPath:)]) {
         [self.dataSource collectionView:collectionView itemAtIndexPath:indexPath didTransferToCollectionView:toCollectionView indexPath:toIndexPath];
+    }
+}
+
+#pragma mark Data Source Copy
+
+- (BOOL)collectionView:(UICollectionView *)collectionView itemAtIndexPath:(NSIndexPath *)indexPath canCopyToCollectionView:(UICollectionView *)toCollectionView indexPath:(NSIndexPath *)toIndexPath {
+    NSParameterAssert(collectionView);
+    NSParameterAssert(indexPath);
+    NSParameterAssert(toCollectionView);
+    NSParameterAssert(toIndexPath);
+    BOOL canCopy = NO;
+    if ([self.dataSource respondsToSelector:@selector(collectionView:itemAtIndexPath:canCopyToCollectionView:indexPath:)]) {
+        canCopy = [self.dataSource collectionView:collectionView itemAtIndexPath:indexPath canCopyToCollectionView:toCollectionView indexPath:toIndexPath];
+    }
+    
+    return canCopy;
+}
+
+- (void)collectionView:(UICollectionView *)collectionView itemAtIndexPath:(NSIndexPath *)indexPath willCopyToCollectionView:(UICollectionView *)toCollectionView indexPath:(NSIndexPath *)toIndexPath {
+    NSParameterAssert(collectionView);
+    NSParameterAssert(indexPath);
+    NSParameterAssert(toCollectionView);
+    NSParameterAssert(toIndexPath);
+    if ([self.dataSource respondsToSelector:@selector(collectionView:itemAtIndexPath:willCopyToCollectionView:indexPath:)]) {
+        [self.dataSource collectionView:collectionView itemAtIndexPath:indexPath willCopyToCollectionView:toCollectionView indexPath:toIndexPath];
+    }
+}
+
+- (void)collectionView:(UICollectionView *)collectionView itemAtIndexPath:(NSIndexPath *)indexPath didCopyToCollectionView:(UICollectionView *)toCollectionView indexPath:(NSIndexPath *)toIndexPath {
+    NSParameterAssert(collectionView);
+    NSParameterAssert(indexPath);
+    NSParameterAssert(toCollectionView);
+    NSParameterAssert(toIndexPath);
+    if ([self.dataSource respondsToSelector:@selector(collectionView:itemAtIndexPath:didCopyToCollectionView:indexPath:)]) {
+        [self.dataSource collectionView:collectionView itemAtIndexPath:indexPath didCopyToCollectionView:toCollectionView indexPath:toIndexPath];
+    }
+}
+
+#pragma mark Data Source Replace
+
+- (BOOL)collectionView:(UICollectionView *)collectionView itemAtIndexPath:(NSIndexPath *)indexPath canReplaceWithCollectionView:(UICollectionView *)toCollectionView indexPath:(NSIndexPath *)toIndexPath {
+    NSParameterAssert(collectionView);
+    NSParameterAssert(indexPath);
+    NSParameterAssert(toCollectionView);
+    NSParameterAssert(toIndexPath);
+    BOOL canReplace = NO;
+    if ([self.dataSource respondsToSelector:@selector(collectionView:itemAtIndexPath:canReplaceWithCollectionView:indexPath:)]) {
+        canReplace = [self.dataSource collectionView:collectionView itemAtIndexPath:indexPath canReplaceWithCollectionView:toCollectionView indexPath:toIndexPath];
+    }
+    
+    return canReplace;
+}
+
+- (void)collectionView:(UICollectionView *)collectionView itemAtIndexPath:(NSIndexPath *)indexPath willReplaceWithCollectionView:(UICollectionView *)toCollectionView indexPath:(NSIndexPath *)toIndexPath {
+    NSParameterAssert(collectionView);
+    NSParameterAssert(indexPath);
+    NSParameterAssert(toCollectionView);
+    NSParameterAssert(toIndexPath);
+    if ([self.dataSource respondsToSelector:@selector(collectionView:itemAtIndexPath:willReplaceWithCollectionView:indexPath:)]) {
+        [self.dataSource collectionView:collectionView itemAtIndexPath:indexPath willReplaceWithCollectionView:toCollectionView indexPath:toIndexPath];
+    }
+}
+
+- (void)collectionView:(UICollectionView *)collectionView itemAtIndexPath:(NSIndexPath *)indexPath didReplaceWithCollectionView:(UICollectionView *)toCollectionView indexPath:(NSIndexPath *)toIndexPath {
+    NSParameterAssert(collectionView);
+    NSParameterAssert(indexPath);
+    NSParameterAssert(toCollectionView);
+    NSParameterAssert(toIndexPath);
+    if ([self.dataSource respondsToSelector:@selector(collectionView:itemAtIndexPath:didReplaceWithCollectionView:indexPath:)]) {
+        [self.dataSource collectionView:collectionView itemAtIndexPath:indexPath didReplaceWithCollectionView:toCollectionView indexPath:toIndexPath];
     }
 }
 

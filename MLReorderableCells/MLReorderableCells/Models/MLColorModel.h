@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-@interface MLColorModel : NSObject
+@interface MLColorModel : NSObject <NSCopying>
 
 @property (nonatomic, readonly, copy) NSString * identifier;
 @property (nonatomic, readonly, copy) UIColor * color;

@@ -9,6 +9,17 @@
 #import "MLColorModel.h"
 #import <UIColor+MLPFlatColors/UIColor+MLPFlatColors.h>
 
+#pragma mark - MLColorModel
+
+@interface MLColorModel ()
+
+@property (nonatomic, readwrite, copy) NSString * identifier;
+@property (nonatomic, readwrite, copy) UIColor * color;
+
+@end
+
+#pragma mark -
+
 @implementation MLColorModel
 
 + (instancetype)model {
@@ -32,6 +43,15 @@
     }
     
     return self;
+}
+
+#pragma mark NSCopying
+
+- (id)copyWithZone:(NSZone *)zone {
+    MLColorModel * model = [[[self class] alloc] init];
+    model.identifier = [self.identifier copy];
+    model.color = [self.color copy];
+    return model;
 }
 
 @end

@@ -8,16 +8,14 @@
 
 #import "MLDirectionContainerViewController.h"
 #import "MLDirectionCollectionViewController.h"
-//#import "MLReorderableCollections.h"
 #import "MLReorderableCollectionController.h"
 
 #pragma mark - MLDirectionContainerViewController
 
-@interface MLDirectionContainerViewController () <MLReorderableCollectionControllerDelegate, MLReorderableCollectionControllerDataSource>//<MLReorderableCollectionDelegate, MLReorderableCollectionDataSource>
+@interface MLDirectionContainerViewController () <MLReorderableCollectionControllerDelegate, MLReorderableCollectionControllerDataSource>
 
 @property (nonatomic, readwrite, strong) MLDirectionCollectionViewController * verticalCollectionViewController;
 @property (nonatomic, readwrite, strong) MLDirectionCollectionViewController * horizontalCollectionViewController;
-//@property (nonatomic, readwrite, strong) MLReorderableCollections * reorderableCollections;
 @property (nonatomic, readwrite, strong) MLReorderableCollectionController * reorderableController;
 @property (nonatomic, readwrite, strong) id cachedObject;
 
@@ -31,25 +29,12 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
-//    self.reorderableCollections = [[MLReorderableCollections alloc] initWithContainerView:self.view];
-//    
-//    MLReorderableCollection * reorderableCollection = nil;
-//    reorderableCollection = [self.reorderableCollections addCollectionView:self.verticalCollectionViewController.collectionView];
-//    reorderableCollection.delegate = self;
-//    reorderableCollection.dataSource = self;
-//    
-//    reorderableCollection = [self.reorderableCollections addCollectionView:self.horizontalCollectionViewController.collectionView];
-//    reorderableCollection.delegate = self;
-//    reorderableCollection.dataSource = self;
-    
+
     self.reorderableController = [[MLReorderableCollectionController alloc] initWithViewContainer:self.view];
     self.reorderableController.delegate = self;
     self.reorderableController.dataSource = self;
     [self.reorderableController addCollectionView:self.verticalCollectionViewController.collectionView];
     [self.reorderableController addCollectionView:self.horizontalCollectionViewController.collectionView];
-    
-    
 }
 
 #pragma mark Segues
@@ -65,27 +50,12 @@
     }
 }
 
-//#pragma mark MLReorderableCollectionDelegate
 #pragma mark MLReorderableCollectionControllerDelegate
 
-- (void)collectionView:(UICollectionView *)collectionView willBeginDraggingItemAtIndexPath:(NSIndexPath *)indexPath {
-//    NSLog(@"-> %@: %@", NSStringFromClass([self class]), NSStringFromSelector(_cmd));
-}
-
-- (void)collectionView:(UICollectionView *)collectionView didBeginDraggingItemAtIndexPath:(NSIndexPath *)indexPath {
-//    NSLog(@"-> %@: %@", NSStringFromClass([self class]), NSStringFromSelector(_cmd));
-}
-
-- (void)collectionView:(UICollectionView *)collectionView willEndDraggingItemAtIndexPath:(NSIndexPath *)indexPath {
-//    NSLog(@"-> %@: %@", NSStringFromClass([self class]), NSStringFromSelector(_cmd));
-}
-
 - (void)collectionView:(UICollectionView *)collectionView didEndDraggingItemAtIndexPath:(NSIndexPath *)indexPath {
-//    NSLog(@"-> %@: %@", NSStringFromClass([self class]), NSStringFromSelector(_cmd));
     self.cachedObject = nil;
 }
 
-//#pragma mark MLReorderableCollectionDataSource
 #pragma mark MLReorderableCollectionControllerDataSource
 #pragma mark Reorder
 
@@ -93,32 +63,14 @@
     return YES;
 }
 
-//- (UIView *)reorderableCollectionContainerForCollectionView:(UICollectionView *)collectionView {
-//    return self.splitViewController.view;
-//}
-
 - (NSIndexPath *)indexPathForNewItemInCollectionView:(UICollectionView *)collectionView {
-    BOOL isCurrenCollectionView = (self.reorderableController.currentCollectionView == collectionView);
-    RZArrayCollectionList * resultsController = [self resultsControllerForCollectionView:collectionView];
-    
-    if (isCurrenCollectionView) {
-        return (0 == resultsController.listObjects.count) ? [NSIndexPath indexPathForRow:0 inSection:0] : nil;
-    }
-    
-#warning Check implementation for empty index path!
-    NSUInteger section = 0;
-    id <RZCollectionListSectionInfo> sectionInfo = resultsController.sections[section];
-    return [NSIndexPath indexPathForRow:[sectionInfo numberOfObjects] inSection:section];
+    return nil;
 }
 
 #pragma mark Insert
 
 - (BOOL)collectionView:(UICollectionView *)collectionView canInsertItemAtIndexPath:(NSIndexPath *)indexPath {
-//    NSLog(@"-> can insert: %@", [self nameForCollectionView:collectionView]);
     return YES;
-}
-
-- (void)collectionView:(UICollectionView *)collectionView willInsertItemAtIndexPath:(NSIndexPath *)indexPath {
 }
 
 - (void)collectionView:(UICollectionView *)collectionView didInsertItemAtIndexPath:(NSIndexPath *)indexPath {
@@ -130,11 +82,7 @@
 #pragma mark Delete
 
 - (BOOL)collectionView:(UICollectionView *)collectionView canDeleteItemAtIndexPath:(NSIndexPath *)indexPath {
-//    NSLog(@"-> can delete: %@", [self nameForCollectionView:collectionView]);
     return YES;
-}
-
-- (void)collectionView:(UICollectionView *)collectionView willDeleteItemAtIndexPath:(NSIndexPath *)indexPath {
 }
 
 - (void)collectionView:(UICollectionView *)collectionView didDeleteItemAtIndexPath:(NSIndexPath *)indexPath {
@@ -149,16 +97,21 @@
     return YES;
 }
 
-- (void)collectionView:(UICollectionView *)collectionView itemAtIndexPath:(NSIndexPath *)fromIndexPath willReplaceWithIndexPath:(NSIndexPath *)toIndexPath {
-}
-
 - (void)collectionView:(UICollectionView *)collectionView itemAtIndexPath:(NSIndexPath *)fromIndexPath didReplaceWithIndexPath:(NSIndexPath *)toIndexPath {
     RZArrayCollectionList * resultsController = [self resultsControllerForCollectionView:collectionView];
-    id fromObject = [resultsController objectAtIndexPath:fromIndexPath];
-    id toObject = [resultsController objectAtIndexPath:toIndexPath];
     
-    [resultsController replaceObjectAtIndexPath:toIndexPath withObject:fromObject];
-    [resultsController replaceObjectAtIndexPath:fromIndexPath withObject:toObject];
+    if ([fromIndexPath isEqual:toIndexPath]) { // replace items between collections
+        id key = [self keyFromCollectionView:collectionView];
+        id object = [self.cachedObject objectForKey:key];
+        [resultsController replaceObjectAtIndexPath:toIndexPath withObject:object];
+    }
+    else { // replace items in collection
+        id fromObject = [resultsController objectAtIndexPath:fromIndexPath];
+        id toObject = [resultsController objectAtIndexPath:toIndexPath];
+        
+        [resultsController replaceObjectAtIndexPath:toIndexPath withObject:fromObject];
+        [resultsController replaceObjectAtIndexPath:fromIndexPath withObject:toObject];
+    }
 }
 
 #pragma mark Move
@@ -167,25 +120,55 @@
     return YES;
 }
 
-- (void)collectionView:(UICollectionView *)collectionView itemAtIndexPath:(NSIndexPath *)fromIndexPath willMoveToIndexPath:(NSIndexPath *)toIndexPath {
-}
-
 - (void)collectionView:(UICollectionView *)collectionView itemAtIndexPath:(NSIndexPath *)fromIndexPath didMoveToIndexPath:(NSIndexPath *)toIndexPath {
     RZArrayCollectionList * resultsController = [self resultsControllerForCollectionView:collectionView];
     [resultsController moveObjectAtIndexPath:fromIndexPath toIndexPath:toIndexPath];
 }
 
-#pragma mark Transfer
+#pragma mark Transfer Between Collections
 
 - (BOOL)collectionView:(UICollectionView *)collectionView itemAtIndexPath:(NSIndexPath *)indexPath canTransferToCollectionView:(UICollectionView *)toCollectionView indexPath:(NSIndexPath *)toIndexPath {
+    return NO;
+}
+
+#pragma mark Copy Between Collections
+
+- (BOOL)collectionView:(UICollectionView *)collectionView itemAtIndexPath:(NSIndexPath *)indexPath canCopyToCollectionView:(UICollectionView *)toCollectionView indexPath:(NSIndexPath *)toIndexPath {
+    return NO;
+}
+
+- (void)collectionView:(UICollectionView *)collectionView itemAtIndexPath:(NSIndexPath *)indexPath willCopyToCollectionView:(UICollectionView *)toCollectionView indexPath:(NSIndexPath *)toIndexPath {
+    RZArrayCollectionList * resultsController = [self resultsControllerForCollectionView:collectionView];
+    self.cachedObject = [[resultsController objectAtIndexPath:indexPath] copy];
+}
+
+- (void)collectionView:(UICollectionView *)collectionView itemAtIndexPath:(NSIndexPath *)indexPath didCopyToCollectionView:(UICollectionView *)toCollectionView indexPath:(NSIndexPath *)toIndexPath {
+    self.cachedObject = nil;
+}
+
+#pragma mark Replace Between Collections
+
+- (BOOL)collectionView:(UICollectionView *)collectionView itemAtIndexPath:(NSIndexPath *)indexPath canReplaceWithCollectionView:(UICollectionView *)toCollectionView indexPath:(NSIndexPath *)toIndexPath {
     return YES;
 }
 
-//- (void)collectionView:(UICollectionView *)collectionView itemAtIndexPath:(NSIndexPath *)indexPath willTransferToCollectionView:(UICollectionView *)toCollectionView indexPath:(NSIndexPath *)toIndexPath {
-//}
-//
-//- (void)collectionView:(UICollectionView *)collectionView itemAtIndexPath:(NSIndexPath *)indexPath didTransferToCollectionView:(UICollectionView *)toCollectionView indexPath:(NSIndexPath *)toIndexPath {
-//}
+- (void)collectionView:(UICollectionView *)collectionView itemAtIndexPath:(NSIndexPath *)indexPath willReplaceWithCollectionView:(UICollectionView *)toCollectionView indexPath:(NSIndexPath *)toIndexPath {
+    RZArrayCollectionList * fromResultsController = [self resultsControllerForCollectionView:collectionView];
+    RZArrayCollectionList * toResultsController = [self resultsControllerForCollectionView:toCollectionView];
+    
+    id fromObject = [fromResultsController objectAtIndexPath:indexPath];
+    id toObject = [toResultsController objectAtIndexPath:toIndexPath];
+    
+    id fromKey = [self keyFromCollectionView:collectionView];
+    id toKey = [self keyFromCollectionView:toCollectionView];
+    
+    self.cachedObject = @{fromKey   : toObject,
+                          toKey     : fromObject};
+}
+
+- (void)collectionView:(UICollectionView *)collectionView itemAtIndexPath:(NSIndexPath *)indexPath didReplaceWithCollectionView:(UICollectionView *)toCollectionView indexPath:(NSIndexPath *)toIndexPath {
+    self.cachedObject = nil;
+}
 
 #pragma mark Private Methods
 
@@ -213,6 +196,11 @@
     }
     
     return nil;
+}
+
+- (NSString *)keyFromCollectionView:(UICollectionView *)collectionView {
+    NSParameterAssert(collectionView);
+    return [NSString stringWithFormat:@"%p", collectionView];
 }
 
 @end
