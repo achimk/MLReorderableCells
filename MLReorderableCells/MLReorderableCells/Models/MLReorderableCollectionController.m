@@ -9,9 +9,6 @@
 #import "MLReorderableCollectionController.h"
 #import "MLReorderableCollectionAnimator.h"
 
-#define ANIMATION_DURATION  0.3f
-#define ANIMATION_DELAY     0.0f
-
 #pragma mark - MLReorderableCollectionController (Delegate)
 
 @interface MLReorderableCollectionController (Delegate)
