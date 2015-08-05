@@ -397,6 +397,7 @@
 				TargetAttributes = {
 					2771B0541B0CF25A00F69DFA = {
 						CreatedOnToolsVersion = 6.1.1;
+						DevelopmentTeam = GRY2SQ975M;
 					};
 					2771B06D1B0CF25A00F69DFA = {
 						CreatedOnToolsVersion = 6.1.1;
@@ -629,9 +630,11 @@
 			baseConfigurationReference = 544DA1D7D410CD39147E6096 /* Pods.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				INFOPLIST_FILE = MLReorderableCells/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "6abaeb3c-b72d-4a78-8625-d480df46237f";
 			};
 			name = Debug;
 		};
@@ -640,6 +643,7 @@
 			baseConfigurationReference = 35CD80B0404949650439522A /* Pods.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				INFOPLIST_FILE = MLReorderableCells/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";

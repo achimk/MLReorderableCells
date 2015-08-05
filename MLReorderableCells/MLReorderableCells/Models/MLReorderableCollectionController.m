@@ -532,12 +532,14 @@
         [self collectionView:fromCollectionView itemAtIndexPath:fromIndexPath didTransferToCollectionView:toCollectionView indexPath:toIndexPath];
     } completion:^(BOOL finished) {
         UIView * viewPlaceholder = self.viewPlaceholder;
-        [self animateFromCollectionView:fromCollectionView
-                        itemAtIndexPath:fromIndexPath
-                       toCollectionView:toCollectionView
-                              indexPath:toIndexPath
-                            placeholder:viewPlaceholder
-                             completion:nil];
+        if (finished && viewPlaceholder) {
+            [self animateFromCollectionView:fromCollectionView
+                            itemAtIndexPath:fromIndexPath
+                           toCollectionView:toCollectionView
+                                  indexPath:toIndexPath
+                                placeholder:viewPlaceholder
+                                 completion:nil];
+        }
     }];
     
     return YES;
@@ -574,12 +576,14 @@
         [self collectionView:fromCollectionView itemAtIndexPath:fromIndexPath didCopyToCollectionView:toCollectionView indexPath:toIndexPath];
     } completion:^(BOOL finished) {
         UIView * viewPlaceholder = self.viewPlaceholder;
-        [self animateFromCollectionView:fromCollectionView
-                        itemAtIndexPath:fromIndexPath
-                       toCollectionView:toCollectionView
-                              indexPath:toIndexPath
-                            placeholder:viewPlaceholder
-                             completion:nil];
+        if (finished && viewPlaceholder) {
+            [self animateFromCollectionView:fromCollectionView
+                            itemAtIndexPath:fromIndexPath
+                           toCollectionView:toCollectionView
+                                  indexPath:toIndexPath
+                                placeholder:viewPlaceholder
+                                 completion:nil];
+        }
     }];
     
     return YES;
@@ -620,12 +624,14 @@
         [self collectionView:fromCollectionView itemAtIndexPath:fromIndexPath didReplaceWithCollectionView:toCollectionView indexPath:toIndexPath];
     } completion:^(BOOL finished) {
         UIView * viewPlaceholder = self.viewPlaceholder;
-        [self animateFromCollectionView:fromCollectionView
-                        itemAtIndexPath:fromIndexPath
-                       toCollectionView:toCollectionView
-                              indexPath:toIndexPath
-                            placeholder:viewPlaceholder
-                             completion:nil];
+        if (finished && viewPlaceholder) {
+            [self animateFromCollectionView:fromCollectionView
+                            itemAtIndexPath:fromIndexPath
+                           toCollectionView:toCollectionView
+                                  indexPath:toIndexPath
+                                placeholder:viewPlaceholder
+                                 completion:nil];
+        }
     }];
     
     return YES;
@@ -694,13 +700,35 @@
 }
 
 - (void)animateFromCollectionView:(UICollectionView *)fromCollectionView itemAtIndexPath:(NSIndexPath *)fromIndexPath toCollectionView:(UICollectionView *)toCollectionView indexPath:(NSIndexPath *)toIndexPath placeholder:(UIView *)viewPlaceholder completion:(void(^)(BOOL))completion {
-//    NSParameterAssert(fromCollectionView);
-//    NSParameterAssert(fromIndexPath);
-//    NSParameterAssert(toCollectionView);
-//    NSParameterAssert(toIndexPath);
-//    NSParameterAssert(viewPlaceholder);
+    NSParameterAssert(fromCollectionView);
+    NSParameterAssert(fromIndexPath);
+    NSParameterAssert(toCollectionView);
+    NSParameterAssert(toIndexPath);
+    NSParameterAssert(viewPlaceholder);
     
-#warning Implement!
+    UICollectionViewCell * toCell = [toCollectionView cellForItemAtIndexPath:toIndexPath];
+    for (UIView * subview in viewPlaceholder.subviews) {
+        if ([subview isKindOfClass:[UIImageView class]]) {
+            UIImageView * imageView = (UIImageView *)subview;
+            imageView.image = [self imageFromCollectionViewCell:toCell];
+            break;
+        }
+    }
+
+    UICollectionViewLayoutAttributes * toAttribs = [toCollectionView.collectionViewLayout layoutAttributesForItemAtIndexPath:toIndexPath];
+    CGRect frame = toAttribs.frame;
+    frame.size.width *= 1.1f;
+    frame.size.height *= 1.1f;
+    CGPoint center = viewPlaceholder.center;
+    
+    [UIView animateKeyframesWithDuration:ANIMATION_DURATION delay:ANIMATION_DELAY options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut animations:^{
+        viewPlaceholder.frame = frame;
+        viewPlaceholder.center = center;
+    } completion:^(BOOL finished) {
+        if (completion) {
+            completion(finished);
+        }
+    }];
 }
 
 #pragma mark Private Methods
