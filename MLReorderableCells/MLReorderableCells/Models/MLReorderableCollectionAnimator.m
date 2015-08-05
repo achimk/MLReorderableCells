@@ -8,8 +8,13 @@
 
 #import "MLReorderableCollectionAnimator.h"
 
-const NSTimeInterval MLReorderableCollectionAnimationDuration   = 0.3f;
-const NSTimeInterval MLReorderableCollectionAnimationDelay      = 0.0f;
+static const NSTimeInterval MLReorderableCollectionAnimationDuration    = 0.3f;
+static const NSTimeInterval MLReorderableCollectionAnimationDelay       = 0.0f;
+static const CGFloat MLReorderableCollectionScaleEnlarge                = 1.1f;
+static const CGFloat MLReorderableCollectionScaleShrink                 = 0.01f;
+static const CGFloat MLReorderableCollectionImageScale                  = 4.0f;
+
+#pragma mark - MLReorderableCollectionAnimator
 
 @implementation MLReorderableCollectionAnimator
 
@@ -49,8 +54,8 @@ const NSTimeInterval MLReorderableCollectionAnimationDelay      = 0.0f;
     [collectionView.collectionViewLayout invalidateLayout];
     
     [UIView animateWithDuration:MLReorderableCollectionAnimationDuration delay:MLReorderableCollectionAnimationDelay options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut animations:^{
-        viewPlaceholder.transform = CGAffineTransformMakeScale(1.1f, 1.1f);
-        highlightedImageView.alpha = 0;
+        viewPlaceholder.transform = CGAffineTransformMakeScale(MLReorderableCollectionScaleEnlarge, MLReorderableCollectionScaleEnlarge);
+        highlightedImageView.alpha = 0.0f;
     } completion:^(BOOL finished) {
         [highlightedImageView removeFromSuperview];
         
@@ -78,7 +83,7 @@ const NSTimeInterval MLReorderableCollectionAnimationDelay      = 0.0f;
             viewPlaceholder.frame = frame;
         }
         else {
-            viewPlaceholder.transform = CGAffineTransformMakeScale(0.01f, 0.01f);
+            viewPlaceholder.transform = CGAffineTransformMakeScale(MLReorderableCollectionScaleShrink, MLReorderableCollectionScaleShrink);
             viewPlaceholder.alpha = 0.0f;
         }
     } completion:^(BOOL finished) {
@@ -106,8 +111,8 @@ const NSTimeInterval MLReorderableCollectionAnimationDelay      = 0.0f;
     
     UICollectionViewLayoutAttributes * toAttribs = [toCollectionView.collectionViewLayout layoutAttributesForItemAtIndexPath:toIndexPath];
     CGRect frame = toAttribs.frame;
-    frame.size.width *= 1.1f;
-    frame.size.height *= 1.1f;
+    frame.size.width *= MLReorderableCollectionScaleEnlarge;
+    frame.size.height *= MLReorderableCollectionScaleEnlarge;
     CGPoint center = viewPlaceholder.center;
     
     [UIView animateKeyframesWithDuration:MLReorderableCollectionAnimationDuration delay:MLReorderableCollectionAnimationDelay options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut animations:^{
@@ -133,7 +138,7 @@ const NSTimeInterval MLReorderableCollectionAnimationDelay      = 0.0f;
 
 - (UIImage *)imageFromCollectionViewCell:(UICollectionViewCell *)cell {
     NSParameterAssert(cell);
-    UIGraphicsBeginImageContextWithOptions(cell.bounds.size, NO, 4.0f);
+    UIGraphicsBeginImageContextWithOptions(cell.bounds.size, NO, MLReorderableCollectionImageScale);
     [cell.layer renderInContext:UIGraphicsGetCurrentContext()];
     UIImage * image = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();

@@ -75,7 +75,7 @@
 @interface MLReorderableCollectionController ()
 
 @property (nonatomic, readonly, strong) NSMutableArray * arrayOfCollectionViews;
-@property (nonatomic, readwrite, assign, getter=isInside) BOOL inside;
+@property (nonatomic, readwrite, assign, getter=isInsideBounds) BOOL insideBounds;
 @property (nonatomic, readwrite, assign, getter=isItemCopied) BOOL itemCopied;
 @property (nonatomic, readwrite, strong) UIView * viewPlaceholder;
 @property (nonatomic, readwrite, strong) NSIndexPath * currentIndexPath;
@@ -126,6 +126,11 @@
     }
     
     return self;
+}
+
+- (void)dealloc {
+    _longPressGesture.delegate = nil;
+    _panGesture.delegate = nil;
 }
 
 #pragma mark Accessors
@@ -241,7 +246,7 @@
             UICollectionViewCell * cell = [collectionView cellForItemAtIndexPath:indexPath];
             UIView * viewPlaceholder = [self viewPlaceholderFromCollectionViewCell:cell];
             
-            self.inside = YES;
+            self.insideBounds = YES;
             [self allowsScrollToTop:NO];
             self.viewPlaceholder = viewPlaceholder;
             self.currentIndexPath = indexPath;
@@ -264,7 +269,7 @@
             UICollectionView * collectionView = self.currentCollectionView;
             UIView * viewPlaceholder = self.viewPlaceholder;
             
-            self.inside = NO;
+            self.insideBounds = NO;
             self.itemCopied = NO;
             [self allowsScrollToTop:YES];
             self.viewPlaceholder = nil;
@@ -296,40 +301,42 @@
     switch (gestureRecognizer.state) {
         case UIGestureRecognizerStateChanged: {
             UICollectionView * collectionView = [self collectionViewForGesture:gestureRecognizer];
-            BOOL shouldUpdateInside = NO;
-            BOOL shouldUpdateCollectionView = NO;
-            BOOL isInside = (nil != collectionView);
-            BOOL hasChanged = (isInside != self.isInside);
-            BOOL hasCollectionViewChanged = (isInside && self.currentCollectionView != collectionView);
+            BOOL shouldUpdateInsideBounds = NO;
+            BOOL shouldUpdateCurrentCollectionView = NO;
+            BOOL isGestureInsideBounds = (nil != collectionView);
+            BOOL hasChangedBounds = (isGestureInsideBounds != self.isInsideBounds);
+            BOOL isChangingCollectionView = (isGestureInsideBounds && self.currentCollectionView != collectionView);
             
             CGPoint point = [gestureRecognizer locationInView:self.viewContainer];
             UIView * viewPlaceholder = self.viewPlaceholder;
             viewPlaceholder.center = point;
 
-            if (hasCollectionViewChanged) {
-                if (self.currentIndexPath) {
+            if (isChangingCollectionView) {
+                BOOL isItemDeleted = (nil == self.currentIndexPath);
+                
+                if (isItemDeleted) {
+                    shouldUpdateInsideBounds = shouldUpdateCurrentCollectionView = [self insertItemToCollectionView:collectionView];
+                }
+                else {
                     UICollectionView * fromCollectionView = self.currentCollectionView;
                     [self transferOrCopyOrReplaceFromCollectionView:fromCollectionView toCollectionView:collectionView];
                 }
-                else {
-                    shouldUpdateInside = shouldUpdateCollectionView = [self insertItemToCollectionView:collectionView];
-                }
             }
-            else if (isInside && hasChanged) {
-                shouldUpdateInside = [self insertItemToCollectionView:collectionView];
+            else if (isGestureInsideBounds && hasChangedBounds) {
+                shouldUpdateInsideBounds = [self insertItemToCollectionView:collectionView];
             }
-            else if (!isInside && hasChanged){
-                shouldUpdateInside = [self deleteItemFromCollectionView:self.currentCollectionView];
+            else if (!isGestureInsideBounds && hasChangedBounds){
+                shouldUpdateInsideBounds = [self deleteItemFromCollectionView:self.currentCollectionView];
             }
-            else if (isInside) {
+            else if (isGestureInsideBounds) {
                 [self replaceOrMoveItemInCollectionView:collectionView];
             }
             
-            if (shouldUpdateInside) {
-                self.inside = isInside;
+            if (shouldUpdateInsideBounds) {
+                self.insideBounds = isGestureInsideBounds;
             }
             
-            if (shouldUpdateCollectionView) {
+            if (shouldUpdateCurrentCollectionView) {
                 NSParameterAssert(collectionView);
                 self.currentCollectionView = collectionView;
             }
@@ -415,12 +422,28 @@
         return NO;
     }
     
+    BOOL hasCollectionViewChanged = (self.currentCollectionView != collectionView);
+    UICollectionView * fromCollectionView = self.currentCollectionView;
+    NSIndexPath * fromIndexPath = [NSIndexPath indexPathForRow:NSNotFound inSection:NSNotFound];
+    UICollectionView * toCollectionView = collectionView;
+    NSIndexPath * toIndexPath = indexPath;
+    
     [self collectionView:collectionView willInsertItemAtIndexPath:indexPath];
     [collectionView performBatchUpdates:^{
         self.currentIndexPath = indexPath;
         [collectionView insertItemsAtIndexPaths:@[indexPath]];
         [self collectionView:collectionView didInsertItemAtIndexPath:indexPath];
-    } completion:nil];
+    } completion:^(BOOL finished) {
+        UIView * viewPlaceholder = self.viewPlaceholder;
+        if (finished && hasCollectionViewChanged && viewPlaceholder) {
+            [self animateFromCollectionView:fromCollectionView
+                            itemAtIndexPath:fromIndexPath
+                           toCollectionView:toCollectionView
+                                  indexPath:toIndexPath
+                                placeholder:viewPlaceholder
+                                 completion:nil];
+        }
+    }];
     
     return YES;
 }
