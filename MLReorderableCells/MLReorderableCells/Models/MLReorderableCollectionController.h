@@ -9,6 +9,16 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
+@protocol MLReorderableCollectionControllerAnimator <NSObject>
+
+@required
+- (UIView *)viewPlaceholderFromCollectionViewCell:(UICollectionViewCell *)cell;
+- (void)collectionView:(UICollectionView *)collectionView beginsAnimationItemAtIndexPath:(NSIndexPath *)indexPath usingPlaceholder:(UIView *)viewPlaceholder completion:(void(^)(BOOL))completion;
+- (void)collectionView:(UICollectionView *)collectionView endsAnimationItemAtIndexPath:(NSIndexPath *)indexPath usingPlaceholder:(UIView *)viewPlaceholder completion:(void(^)(BOOL))completion;
+- (void)collectionView:(UICollectionView *)fromCollectionView itemAtIndexPath:(NSIndexPath *)fromIndexPath animatesToCollectionView:(UICollectionView *)toCollectionView indexPath:(NSIndexPath *)toIndexPath usingPlaceholder:(UIView *)viewPlaceholder completion:(void(^)(BOOL))completion;
+
+@end
+
 @protocol MLReorderableCollectionControllerDelegate <NSObject>
 
 @optional
@@ -72,6 +82,7 @@
 @property (nonatomic, readonly, strong) UIPanGestureRecognizer * panGesture;
 @property (nonatomic, readwrite, weak) id <MLReorderableCollectionControllerDelegate> delegate;
 @property (nonatomic, readwrite, weak) id <MLReorderableCollectionControllerDataSource> dataSource;
+@property (nonatomic, readwrite, strong) id <MLReorderableCollectionControllerAnimator> animator;
 
 - (instancetype)initWithViewContainer:(UIView *)viewContainer NS_DESIGNATED_INITIALIZER;
 

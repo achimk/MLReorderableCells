@@ -7,6 +7,7 @@
 //
 
 #import "MLReorderableCollectionController.h"
+#import "MLReorderableCollectionAnimator.h"
 
 #define ANIMATION_DURATION  0.3f
 #define ANIMATION_DELAY     0.0f
@@ -86,6 +87,8 @@
 
 @implementation MLReorderableCollectionController
 
+@synthesize animator = _animator;
+
 #pragma mark Init
 
 - (instancetype)initWithViewContainer:(UIView *)viewContainer {
@@ -153,6 +156,19 @@
     }
     
     return NO;
+}
+
+- (void)setAnimator:(id<MLReorderableCollectionControllerAnimator>)animator {
+    if (animator != _animator) {
+        _animator = animator;
+    }
+}
+
+- (id<MLReorderableCollectionControllerAnimator>)animator {
+    if (!_animator) {
+        _animator = [MLReorderableCollectionAnimator animator];
+    }
+    return _animator;
 }
 
 #pragma mark Manage Collection Views
@@ -230,6 +246,7 @@
             self.viewPlaceholder = viewPlaceholder;
             self.currentIndexPath = indexPath;
             self.currentCollectionView = collectionView;
+            [self.viewContainer addSubview:viewPlaceholder];
             
             [self collectionView:collectionView willBeginDraggingItemAtIndexPath:indexPath];
             
@@ -256,6 +273,9 @@
             
             __weak typeof(self)weakSelf = self;
             void (^completion)(BOOL) = ^(BOOL finished) {
+                [viewPlaceholder removeFromSuperview];
+                [collectionView.collectionViewLayout invalidateLayout];
+                
                 if (finished) {
                     [weakSelf collectionView:collectionView didEndDraggingItemAtIndexPath:indexPath];
                 }
@@ -643,60 +663,21 @@
     NSParameterAssert(collectionView);
     NSParameterAssert(indexPath);
     NSParameterAssert(viewPlaceholder);
-    UICollectionViewCell * cell = [collectionView cellForItemAtIndexPath:indexPath];
-    UIView * viewContainer = self.viewContainer;
-    viewPlaceholder.frame = [cell convertRect:cell.bounds toView:viewContainer];
     
-    cell.highlighted = YES;
-    UIImageView * highlightedImageView = [self imageViewFromCollectionViewCell:cell];
-    cell.highlighted = NO;
-    UIImageView * normalImageView = [self imageViewFromCollectionViewCell:cell];
-    
-    [viewPlaceholder addSubview:normalImageView];
-    [viewPlaceholder addSubview:highlightedImageView];
-    [viewContainer addSubview:viewPlaceholder];
-    
-    [collectionView.collectionViewLayout invalidateLayout];
-    
-    [UIView animateWithDuration:ANIMATION_DURATION delay:ANIMATION_DELAY options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut animations:^{
-        viewPlaceholder.transform = CGAffineTransformMakeScale(1.1f, 1.1f);
-        highlightedImageView.alpha = 0;
-    } completion:^(BOOL finished) {
-        [highlightedImageView removeFromSuperview];
-        
-        if (completion) {
-            completion(finished);
-        }
-    }];
+    [self.animator collectionView:collectionView
+   beginsAnimationItemAtIndexPath:indexPath
+                 usingPlaceholder:viewPlaceholder
+                       completion:completion];
 }
 
 - (void)animateLongPressEndForCollectionView:(UICollectionView *)collectionView indexPath:(NSIndexPath *)indexPath placeholder:(UIView *)viewPlaceholder completion:(void(^)(BOOL))completion {
     NSParameterAssert(collectionView);
     NSParameterAssert(viewPlaceholder);
-    CGRect frame = CGRectZero;
-
-    if (indexPath) {
-        UICollectionViewLayoutAttributes * attributes = [collectionView.collectionViewLayout layoutAttributesForItemAtIndexPath:indexPath];
-        frame = [collectionView convertRect:attributes.frame toView:self.viewContainer];
-    }
     
-    [UIView animateWithDuration:ANIMATION_DURATION delay:ANIMATION_DELAY options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut animations:^{
-        if (indexPath) {
-            viewPlaceholder.transform = CGAffineTransformIdentity;
-            viewPlaceholder.frame = frame;
-        }
-        else {
-            viewPlaceholder.transform = CGAffineTransformMakeScale(0.01f, 0.01f);
-            viewPlaceholder.alpha = 0.0f;
-        }
-    } completion:^(BOOL finished) {
-        [viewPlaceholder removeFromSuperview];
-        [collectionView.collectionViewLayout invalidateLayout];
-        
-        if (completion) {
-            completion(finished);
-        }
-    }];
+    [self.animator collectionView:collectionView
+     endsAnimationItemAtIndexPath:indexPath
+                 usingPlaceholder:viewPlaceholder
+                       completion:completion];
 }
 
 - (void)animateFromCollectionView:(UICollectionView *)fromCollectionView itemAtIndexPath:(NSIndexPath *)fromIndexPath toCollectionView:(UICollectionView *)toCollectionView indexPath:(NSIndexPath *)toIndexPath placeholder:(UIView *)viewPlaceholder completion:(void(^)(BOOL))completion {
@@ -706,29 +687,12 @@
     NSParameterAssert(toIndexPath);
     NSParameterAssert(viewPlaceholder);
     
-    UICollectionViewCell * toCell = [toCollectionView cellForItemAtIndexPath:toIndexPath];
-    for (UIView * subview in viewPlaceholder.subviews) {
-        if ([subview isKindOfClass:[UIImageView class]]) {
-            UIImageView * imageView = (UIImageView *)subview;
-            imageView.image = [self imageFromCollectionViewCell:toCell];
-            break;
-        }
-    }
-
-    UICollectionViewLayoutAttributes * toAttribs = [toCollectionView.collectionViewLayout layoutAttributesForItemAtIndexPath:toIndexPath];
-    CGRect frame = toAttribs.frame;
-    frame.size.width *= 1.1f;
-    frame.size.height *= 1.1f;
-    CGPoint center = viewPlaceholder.center;
-    
-    [UIView animateKeyframesWithDuration:ANIMATION_DURATION delay:ANIMATION_DELAY options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionCurveEaseInOut animations:^{
-        viewPlaceholder.frame = frame;
-        viewPlaceholder.center = center;
-    } completion:^(BOOL finished) {
-        if (completion) {
-            completion(finished);
-        }
-    }];
+    [self.animator collectionView:fromCollectionView
+                  itemAtIndexPath:fromIndexPath
+         animatesToCollectionView:toCollectionView
+                        indexPath:toIndexPath
+                 usingPlaceholder:viewPlaceholder
+                       completion:completion];
 }
 
 #pragma mark Private Methods
@@ -780,33 +744,9 @@
 
 - (UIView *)viewPlaceholderFromCollectionViewCell:(UICollectionViewCell *)cell {
     NSParameterAssert(cell);
-    UIView * viewPlaceholder = [[UIView alloc] initWithFrame:cell.bounds];
-    viewPlaceholder.layer.shadowColor = [UIColor blackColor].CGColor;
-    viewPlaceholder.layer.shadowOffset = CGSizeMake(0.0f, 0.0f);
-    viewPlaceholder.layer.shadowOpacity = 0.5f;
-    viewPlaceholder.layer.shadowRadius = 3.0f;
-    
+    UIView * viewPlaceholder = [self.animator viewPlaceholderFromCollectionViewCell:cell];
+    NSAssert(viewPlaceholder, @"View placeholder cannot be nil!");
     return viewPlaceholder;
-}
-
-- (UIImageView *)imageViewFromCollectionViewCell:(UICollectionViewCell *)cell {
-    NSParameterAssert(cell);
-    UIImageView * imageView = [[UIImageView alloc] initWithFrame:cell.bounds];
-    imageView.contentMode = UIViewContentModeScaleAspectFill;
-    imageView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-    imageView.image = [self imageFromCollectionViewCell:cell];
-    
-    return imageView;
-}
-
-- (UIImage *)imageFromCollectionViewCell:(UICollectionViewCell *)cell {
-    NSParameterAssert(cell);
-    UIGraphicsBeginImageContextWithOptions(cell.bounds.size, NO, 4.0f);
-    [cell.layer renderInContext:UIGraphicsGetCurrentContext()];
-    UIImage * image = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    
-    return image;
 }
 
 - (NSIndexPath *)indexPathFromViewPlaceholderInCollectionView:(UICollectionView *)collectionView {
