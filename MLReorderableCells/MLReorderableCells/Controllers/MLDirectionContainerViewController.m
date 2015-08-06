@@ -31,6 +31,7 @@
     [super viewDidLoad];
 
     self.reorderableController = [[MLReorderableCollectionController alloc] initWithViewContainer:self.view];
+    self.reorderableController.performChangesOnRelease = NO;
     self.reorderableController.delegate = self;
     self.reorderableController.dataSource = self;
     [self.reorderableController addCollectionView:self.verticalCollectionViewController.collectionView];
@@ -54,6 +55,14 @@
 
 - (void)collectionView:(UICollectionView *)collectionView didEndDraggingItemAtIndexPath:(NSIndexPath *)indexPath {
     self.cachedObject = nil;
+}
+
+- (void)collectionView:(UICollectionView *)collectionView didBeginHoveringItemAtIndexPath:(NSIndexPath *)indexPath {
+    NSLog(@"-> begin: %@-%@", @(indexPath.section), @(indexPath.row));
+}
+
+- (void)collectionView:(UICollectionView *)collectionView didEndHoveringItemAtIndexPath:(NSIndexPath *)indexPath {
+    NSLog(@"<- end: %@-%@\n\n", @(indexPath.section), @(indexPath.row));
 }
 
 #pragma mark MLReorderableCollectionControllerDataSource

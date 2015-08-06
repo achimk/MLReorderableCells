@@ -19,6 +19,10 @@
 - (void)collectionView:(UICollectionView *)collectionView willEndDraggingItemAtIndexPath:(NSIndexPath *)indexPath;
 - (void)collectionView:(UICollectionView *)collectionView didEndDraggingItemAtIndexPath:(NSIndexPath *)indexPath;
 
+// Hover item delegate
+- (void)collectionView:(UICollectionView *)collectionView didBeginHoveringItemAtIndexPath:(NSIndexPath *)indexPath;
+- (void)collectionView:(UICollectionView *)collectionView didEndHoveringItemAtIndexPath:(NSIndexPath *)indexPath;
+
 @end
 
 #pragma mark - MLReorderableCollectionController (DataSource)
@@ -72,11 +76,16 @@
 @interface MLReorderableCollectionController ()
 
 @property (nonatomic, readonly, strong) NSMutableArray * arrayOfCollectionViews;
+@property (nonatomic, readwrite, assign, getter=isDragging) BOOL dragging;
 @property (nonatomic, readwrite, assign, getter=isInsideBounds) BOOL insideBounds;
 @property (nonatomic, readwrite, assign, getter=isItemCopied) BOOL itemCopied;
 @property (nonatomic, readwrite, strong) UIView * viewPlaceholder;
+
 @property (nonatomic, readwrite, strong) NSIndexPath * currentIndexPath;
 @property (nonatomic, readwrite, strong) UICollectionView * currentCollectionView;
+
+@property (nonatomic, readwrite, strong) NSIndexPath * hoverIndexPath;
+@property (nonatomic, readwrite, strong) UICollectionView * hoverCollectionView;
 
 @end
 
@@ -95,13 +104,13 @@
         _viewContainer = viewContainer;
         _arrayOfCollectionViews = [[NSMutableArray alloc] init];
         
-        _longPressGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPressGesture:)];
-        _longPressGesture.delegate = self;
-        [viewContainer addGestureRecognizer:_longPressGesture];
-        
         _panGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePanGesture:)];
         _panGesture.delegate = self;
         [viewContainer addGestureRecognizer:_panGesture];
+        
+        _longPressGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPressGesture:)];
+        _longPressGesture.delegate = self;
+        [viewContainer addGestureRecognizer:_longPressGesture];
         
         if ([viewContainer isKindOfClass:[UICollectionView class]]) {
             UICollectionView * collectionView = (UICollectionView *)viewContainer;
@@ -171,6 +180,22 @@
         _animator = [MLReorderableCollectionAnimator animator];
     }
     return _animator;
+}
+
+- (void)updateHoveringItemInCollectionView:(UICollectionView *)collectionView atIndexPath:(NSIndexPath *)indexPath {
+    if (![collectionView isEqual:self.hoverCollectionView] || ![indexPath isEqual:self.hoverIndexPath]) {
+        if (self.hoverCollectionView && self.hoverIndexPath) {
+            [self collectionView:self.hoverCollectionView didEndHoveringItemAtIndexPath:self.hoverIndexPath];
+        }
+        
+        self.hoverIndexPath = indexPath;
+        self.hoverCollectionView = collectionView;
+        
+        if (collectionView && indexPath) {
+            [self collectionView:collectionView didBeginHoveringItemAtIndexPath:indexPath];
+        }
+    }
+    
 }
 
 #pragma mark Manage Collection Views
@@ -243,6 +268,7 @@
             UICollectionViewCell * cell = [collectionView cellForItemAtIndexPath:indexPath];
             UIView * viewPlaceholder = [self viewPlaceholderFromCollectionViewCell:cell];
             
+            self.dragging = YES;
             self.insideBounds = YES;
             [self allowsScrollToTop:NO];
             self.viewPlaceholder = viewPlaceholder;
@@ -258,18 +284,29 @@
                                               completion:nil];
             
             [self collectionView:collectionView didBeginDraggingItemAtIndexPath:indexPath];
+            [self updateHoveringItemInCollectionView:collectionView atIndexPath:indexPath];
             
         } break;
         case UIGestureRecognizerStateEnded:
         case UIGestureRecognizerStateCancelled: {
+            if (!self.isDragging) {
+                return;
+            }
+            
             NSIndexPath * indexPath = self.currentIndexPath;
             UICollectionView * collectionView = self.currentCollectionView;
             UIView * viewPlaceholder = self.viewPlaceholder;
             
+            [self updateHoveringItemInCollectionView:collectionView atIndexPath:nil];
+            [self collectionView:collectionView willEndDraggingItemAtIndexPath:indexPath];
+            
+            self.dragging = NO;
             self.insideBounds = NO;
             self.itemCopied = NO;
             [self allowsScrollToTop:YES];
             self.viewPlaceholder = nil;
+            self.hoverIndexPath = nil;
+            self.hoverCollectionView = nil;
             self.currentIndexPath = nil;
             self.currentCollectionView = nil;
             
@@ -282,8 +319,6 @@
                     [weakSelf collectionView:collectionView didEndDraggingItemAtIndexPath:indexPath];
                 }
             };
-            
-            [self collectionView:collectionView willEndDraggingItemAtIndexPath:indexPath];
 
             [self animateLongPressEndForCollectionView:collectionView
                                              indexPath:indexPath
@@ -295,19 +330,39 @@
 }
 
 - (void)handlePanGesture:(UIPanGestureRecognizer *)gestureRecognizer {
+    if (!self.isDragging) {
+        return;
+    }
+    
+    BOOL isChangedState = (UIGestureRecognizerStateChanged == gestureRecognizer.state);
+    BOOL isEndedState = (UIGestureRecognizerStateEnded == gestureRecognizer.state);
+    
     switch (gestureRecognizer.state) {
-        case UIGestureRecognizerStateChanged: {
+        case UIGestureRecognizerStateChanged:
+        case UIGestureRecognizerStateEnded: {
+            NSIndexPath * indexPath = nil;
             UICollectionView * collectionView = [self collectionViewForGesture:gestureRecognizer];
             BOOL shouldUpdateInsideBounds = NO;
             BOOL shouldUpdateCurrentCollectionView = NO;
             BOOL isGestureInsideBounds = (nil != collectionView);
             BOOL hasChangedBounds = (isGestureInsideBounds != self.isInsideBounds);
             BOOL isChangingCollectionView = (isGestureInsideBounds && self.currentCollectionView != collectionView);
+            BOOL shouldPerformChanges = (self.performChangesOnRelease && isEndedState) || (!self.performChangesOnRelease && isChangedState);
             
             CGPoint point = [gestureRecognizer locationInView:self.viewContainer];
             UIView * viewPlaceholder = self.viewPlaceholder;
             viewPlaceholder.center = point;
+            
+            if (collectionView) {
+                indexPath = [self indexPathFromGesture:gestureRecognizer inCollectionView:collectionView];
+            }
 
+            [self updateHoveringItemInCollectionView:collectionView atIndexPath:indexPath];
+            
+            if (!shouldPerformChanges) {
+                return;
+            }
+            
             if (isChangingCollectionView) {
                 BOOL isItemDeleted = (nil == self.currentIndexPath);
                 
@@ -339,9 +394,7 @@
             }
             
         } break;
-        case UIGestureRecognizerStateEnded:
         case UIGestureRecognizerStateCancelled: {
-        
         } break;
         default: break;
     }
@@ -739,7 +792,7 @@
 
 - (UICollectionView *)collectionViewForGesture:(UIGestureRecognizer *)gesture {
     NSParameterAssert(gesture);
-    CGPoint touchPoint = [self.panGesture locationOfTouch:0 inView:self.viewContainer];
+    CGPoint touchPoint = [gesture locationInView:self.viewContainer];
     return [self collectionViewAtPoint:touchPoint];
 }
 
@@ -769,6 +822,16 @@
     return viewPlaceholder;
 }
 
+- (NSIndexPath *)indexPathFromGesture:(UIGestureRecognizer *)gesture inCollectionView:(UICollectionView *)collectionView {
+    NSParameterAssert(gesture);
+    NSParameterAssert(collectionView);
+    CGPoint touchPoint = [gesture locationInView:self.viewContainer];
+    CGPoint point = [self.viewContainer convertPoint:touchPoint toView:collectionView];
+    NSIndexPath * indexPath = [collectionView indexPathForItemAtPoint:point];
+    return indexPath;
+}
+
+#warning Replace with indexPathFromGesture:inCollectionView: method!
 - (NSIndexPath *)indexPathFromViewPlaceholderInCollectionView:(UICollectionView *)collectionView {
     NSAssert(self.viewPlaceholder, @"View placeholder should be set when accessing new index path!");
     NSParameterAssert(collectionView);
@@ -815,6 +878,24 @@
     }
 }
 
+#pragma mark Hover Item Delegates
+
+- (void)collectionView:(UICollectionView *)collectionView didBeginHoveringItemAtIndexPath:(NSIndexPath *)indexPath {
+    NSParameterAssert(collectionView);
+    NSParameterAssert(indexPath);
+    if ([self.delegate respondsToSelector:@selector(collectionView:didBeginHoveringItemAtIndexPath:)]) {
+        [self.delegate collectionView:collectionView didBeginHoveringItemAtIndexPath:indexPath];
+    }
+}
+
+- (void)collectionView:(UICollectionView *)collectionView didEndHoveringItemAtIndexPath:(NSIndexPath *)indexPath {
+    NSParameterAssert(collectionView);
+    NSParameterAssert(indexPath);
+    if ([self.delegate respondsToSelector:@selector(collectionView:didEndHoveringItemAtIndexPath:)]) {
+        [self.delegate collectionView:collectionView didEndHoveringItemAtIndexPath:indexPath];
+    }
+}
+
 @end
 
 #pragma mark -
@@ -835,12 +916,10 @@
 }
 
 - (NSIndexPath *)indexPathForNewItemInCollectionView:(UICollectionView *)collectionView {
-    NSAssert(self.viewPlaceholder, @"View placeholder should be set when accessing new index path!");
     NSParameterAssert(collectionView);
-    CGPoint point = [self.viewContainer convertPoint:self.viewPlaceholder.center toView:collectionView];
-    NSIndexPath * indexPath = [collectionView indexPathForItemAtPoint:point];
+    NSIndexPath * indexPath = nil;
     
-    if (!indexPath && [self.dataSource respondsToSelector:@selector(indexPathForNewItemInCollectionView:)]) {
+    if ([self.dataSource respondsToSelector:@selector(indexPathForNewItemInCollectionView:)]) {
         indexPath = [self.dataSource indexPathForNewItemInCollectionView:collectionView];
     }
     

@@ -28,6 +28,10 @@
 - (void)collectionView:(UICollectionView *)collectionView willEndDraggingItemAtIndexPath:(NSIndexPath *)indexPath;
 - (void)collectionView:(UICollectionView *)collectionView didEndDraggingItemAtIndexPath:(NSIndexPath *)indexPath;
 
+// Hover item delegate
+- (void)collectionView:(UICollectionView *)collectionView didBeginHoveringItemAtIndexPath:(NSIndexPath *)indexPath;
+- (void)collectionView:(UICollectionView *)collectionView didEndHoveringItemAtIndexPath:(NSIndexPath *)indexPath;
+
 @end
 
 @protocol MLReorderableCollectionControllerDataSource <NSObject>
@@ -80,6 +84,8 @@
 @property (nonatomic, readonly, strong) UICollectionView * currentCollectionView;
 @property (nonatomic, readonly, strong) UILongPressGestureRecognizer * longPressGesture;
 @property (nonatomic, readonly, strong) UIPanGestureRecognizer * panGesture;
+@property (nonatomic, readonly, assign, getter=isDragging) BOOL dragging;
+@property (nonatomic, readwrite, assign) BOOL performChangesOnRelease;
 @property (nonatomic, readwrite, weak) id <MLReorderableCollectionControllerDelegate> delegate;
 @property (nonatomic, readwrite, weak) id <MLReorderableCollectionControllerDataSource> dataSource;
 @property (nonatomic, readwrite, strong) id <MLReorderableCollectionControllerAnimator> animator;
