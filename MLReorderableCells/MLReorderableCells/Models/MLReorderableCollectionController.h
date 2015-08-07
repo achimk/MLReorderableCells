@@ -39,6 +39,7 @@
 @optional
 // Reorder data source
 - (BOOL)collectionView:(UICollectionView *)collectionView canReorderItemAtIndexPath:(NSIndexPath *)indexPath;
+- (BOOL)canReorderContinouslyInCollectionView:(UICollectionView *)collectionView;
 - (NSIndexPath *)indexPathForNewItemInCollectionView:(UICollectionView *)collectionView;
 
 // Insert data source
@@ -85,7 +86,7 @@
 @property (nonatomic, readonly, strong) UILongPressGestureRecognizer * longPressGesture;
 @property (nonatomic, readonly, strong) UIPanGestureRecognizer * panGesture;
 @property (nonatomic, readonly, assign, getter=isDragging) BOOL dragging;
-@property (nonatomic, readwrite, assign) BOOL performChangesOnRelease;
+@property (nonatomic, readwrite, assign) BOOL shouldReorderContinously;
 @property (nonatomic, readwrite, weak) id <MLReorderableCollectionControllerDelegate> delegate;
 @property (nonatomic, readwrite, weak) id <MLReorderableCollectionControllerDataSource> dataSource;
 @property (nonatomic, readwrite, strong) id <MLReorderableCollectionControllerAnimator> animator;

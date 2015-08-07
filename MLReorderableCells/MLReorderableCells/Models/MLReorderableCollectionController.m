@@ -101,6 +101,7 @@
     NSParameterAssert(viewContainer);
     
     if (self = [super init]) {
+        _shouldReorderContinously = YES;
         _viewContainer = viewContainer;
         _arrayOfCollectionViews = [[NSMutableArray alloc] init];
         
@@ -347,7 +348,6 @@
             BOOL isGestureInsideBounds = (nil != collectionView);
             BOOL hasChangedBounds = (isGestureInsideBounds != self.isInsideBounds);
             BOOL isChangingCollectionView = (isGestureInsideBounds && self.currentCollectionView != collectionView);
-            BOOL shouldPerformChanges = (self.performChangesOnRelease && isEndedState) || (!self.performChangesOnRelease && isChangedState);
             
             CGPoint point = [gestureRecognizer locationInView:self.viewContainer];
             UIView * viewPlaceholder = self.viewPlaceholder;
@@ -358,6 +358,16 @@
             }
 
             [self updateHoveringItemInCollectionView:collectionView atIndexPath:indexPath];
+            
+            BOOL shouldReorderContinously = NO;
+            if (collectionView && [self.dataSource respondsToSelector:@selector(canReorderContinouslyInCollectionView:)]) {
+                shouldReorderContinously = [self.dataSource canReorderContinouslyInCollectionView:collectionView];
+            }
+            else {
+                shouldReorderContinously = self.shouldReorderContinously;
+            }
+            
+            BOOL shouldPerformChanges = (!shouldReorderContinously && isEndedState) || (shouldReorderContinously && isChangedState);
             
             if (!shouldPerformChanges) {
                 return;

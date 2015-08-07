@@ -31,7 +31,6 @@
     [super viewDidLoad];
 
     self.reorderableController = [[MLReorderableCollectionController alloc] initWithViewContainer:self.view];
-    self.reorderableController.performChangesOnRelease = NO;
     self.reorderableController.delegate = self;
     self.reorderableController.dataSource = self;
     [self.reorderableController addCollectionView:self.verticalCollectionViewController.collectionView];
@@ -70,6 +69,10 @@
 
 - (BOOL)collectionView:(UICollectionView *)collectionView canReorderItemAtIndexPath:(NSIndexPath *)indexPath {
     return YES;
+}
+
+- (BOOL)canReorderContinouslyInCollectionView:(UICollectionView *)collectionView {
+    return (collectionView == self.verticalCollectionViewController.collectionView);
 }
 
 - (NSIndexPath *)indexPathForNewItemInCollectionView:(UICollectionView *)collectionView {
