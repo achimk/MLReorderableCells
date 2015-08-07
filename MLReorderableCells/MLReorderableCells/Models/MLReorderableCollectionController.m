@@ -81,10 +81,10 @@
 @property (nonatomic, readwrite, assign, getter=isItemCopied) BOOL itemCopied;
 @property (nonatomic, readwrite, strong) UIView * viewPlaceholder;
 
-@property (nonatomic, readwrite, strong) NSIndexPath * currentIndexPath;
+@property (nonatomic, readwrite, copy) NSIndexPath * currentIndexPath;
 @property (nonatomic, readwrite, strong) UICollectionView * currentCollectionView;
 
-@property (nonatomic, readwrite, strong) NSIndexPath * hoverIndexPath;
+@property (nonatomic, readwrite, copy) NSIndexPath * hoverIndexPath;
 @property (nonatomic, readwrite, strong) UICollectionView * hoverCollectionView;
 
 @end
@@ -266,16 +266,16 @@
                 return;
             }
             
-            UICollectionViewCell * cell = [collectionView cellForItemAtIndexPath:indexPath];
-            UIView * viewPlaceholder = [self viewPlaceholderFromCollectionViewCell:cell];
-            
             self.dragging = YES;
             self.insideBounds = YES;
             [self allowsScrollToTop:NO];
-            self.viewPlaceholder = viewPlaceholder;
             self.currentIndexPath = indexPath;
             self.currentCollectionView = collectionView;
+            
+            UICollectionViewCell * cell = [collectionView cellForItemAtIndexPath:indexPath];
+            UIView * viewPlaceholder = [self viewPlaceholderFromCollectionViewCell:cell];
             [self.viewContainer addSubview:viewPlaceholder];
+            self.viewPlaceholder = viewPlaceholder;
             
             [self collectionView:collectionView willBeginDraggingItemAtIndexPath:indexPath];
             
@@ -359,12 +359,9 @@
 
             [self updateHoveringItemInCollectionView:collectionView atIndexPath:indexPath];
             
-            BOOL shouldReorderContinously = NO;
+            BOOL shouldReorderContinously = self.shouldReorderContinously;
             if (collectionView && [self.dataSource respondsToSelector:@selector(canReorderContinouslyInCollectionView:)]) {
                 shouldReorderContinously = [self.dataSource canReorderContinouslyInCollectionView:collectionView];
-            }
-            else {
-                shouldReorderContinously = self.shouldReorderContinously;
             }
             
             BOOL shouldPerformChanges = (!shouldReorderContinously && isEndedState) || (shouldReorderContinously && isChangedState);
