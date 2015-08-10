@@ -8,7 +8,7 @@
 
 #import "MLDirectionCollectionViewController.h"
 
-#define NUMBER_OF_INITIAL_ITEMS     3
+#define NUMBER_OF_INITIAL_ITEMS     24
 
 #pragma mark - MLDirectionCollectionViewController
 

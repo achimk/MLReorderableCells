@@ -11,7 +11,7 @@
 #import "MLReorderableCollection.h"
 #import "MLSettingsTableViewController.h"
 
-#define NUMBER_OF_INITIAL_ITEMS     9
+#define NUMBER_OF_INITIAL_ITEMS     24
 
 #pragma mark - MLDataCollectionViewController
 

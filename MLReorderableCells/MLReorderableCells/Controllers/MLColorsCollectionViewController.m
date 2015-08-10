@@ -9,7 +9,7 @@
 #import "MLColorsCollectionViewController.h"
 #import "MLColorCollectionViewCell.h"
 
-#define NUMBER_OF_INITIAL_ITEMS     9
+#define NUMBER_OF_INITIAL_ITEMS     24
 
 #pragma mark - MLColorsCollectionViewController
 

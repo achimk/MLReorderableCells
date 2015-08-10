@@ -76,7 +76,7 @@
 }
 
 - (NSIndexPath *)indexPathForNewItemInCollectionView:(UICollectionView *)collectionView {
-    return nil;
+    return [NSIndexPath indexPathForRow:0 inSection:0];
 }
 
 #pragma mark Insert
@@ -89,6 +89,7 @@
     RZArrayCollectionList * resultsController = [self resultsControllerForCollectionView:collectionView];
     [resultsController insertObject:self.cachedObject atIndexPath:indexPath];
     self.cachedObject = nil;
+    NSLog(@"-> insert object at index: %@", indexPath);
 }
 
 #pragma mark Delete
@@ -101,6 +102,7 @@
     RZArrayCollectionList * resultsController = [self resultsControllerForCollectionView:collectionView];
     self.cachedObject = [resultsController objectAtIndexPath:indexPath];
     [resultsController removeObjectAtIndexPath:indexPath];
+    NSLog(@"-> delete object at index: %@", indexPath);
 }
 
 #pragma mark Replace
@@ -123,6 +125,7 @@
         
         [resultsController replaceObjectAtIndexPath:toIndexPath withObject:fromObject];
         [resultsController replaceObjectAtIndexPath:fromIndexPath withObject:toObject];
+        NSLog(@"-> replace object at index: %@ with index: %@", fromIndexPath, toIndexPath);
     }
 }
 
